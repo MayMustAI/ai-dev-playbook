@@ -8,9 +8,9 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
 | 경로 | 내용 |
 | --- | --- |
-| `.claude-plugin/plugin.json` | 플러그인 매니페스트 |
 | `.claude-plugin/marketplace.json` | 팀 내부 마켓플레이스 정의 |
-| `skills/` | 5개 팀 공용 스킬 (아래 표) |
+| `plugins/maymust/.claude-plugin/plugin.json` | `maymust` 플러그인 매니페스트 |
+| `plugins/maymust/skills/` | 5개 팀 공용 스킬 (아래 표) |
 | `playbook/` | 팀 개발 방법론 문서 (작성 예정) |
 | `templates/` | PR · Worklog 등 공용 템플릿 (작성 예정) |
 
@@ -18,11 +18,11 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
 | 호출 | 역할 |
 | --- | --- |
-| [`/maymust:commit`](skills/commit/SKILL.md) | 스테이지된 변경을 팀 컨벤션(Conventional Commits, 한글 본문) 으로 커밋. `meaningful` / `wip` 2 모드 |
-| [`/maymust:pull-request`](skills/pull-request/SKILL.md) | 듀얼 오디언스(사람 30초 스캔 + AI claim 검증) 구조의 PR 생성. 5단계 루프 대화형 확인 |
-| [`/maymust:merge`](skills/merge/SKILL.md) | squash-merge + 게이트(작성자·리뷰·mergeable·CI). Self-verification/Screenshots 스트립한 깨끗한 squash 메시지. 머지 후 dev 동기화·feature 브랜치 정리 |
-| [`/maymust:worklog`](skills/worklog/SKILL.md) | 작업당 한 장 worklog. `.worklogs/<date>-<branch>.md` 로 feature 브랜치에 커밋 → squash 시 main 에 자연 축적 |
-| [`/maymust:self-review`](skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
+| [`/maymust:commit`](plugins/maymust/skills/commit/SKILL.md) | 스테이지된 변경을 팀 컨벤션(Conventional Commits, 한글 본문) 으로 커밋. `meaningful` / `wip` 2 모드 |
+| [`/maymust:pull-request`](plugins/maymust/skills/pull-request/SKILL.md) | 듀얼 오디언스(사람 30초 스캔 + AI claim 검증) 구조의 PR 생성. 5단계 루프 대화형 확인 |
+| [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | squash-merge + 게이트(작성자·리뷰·mergeable·CI). Self-verification/Screenshots 스트립한 깨끗한 squash 메시지. 머지 후 dev 동기화·feature 브랜치 정리 |
+| [`/maymust:worklog`](plugins/maymust/skills/worklog/SKILL.md) | 작업당 한 장 worklog. `.worklogs/<date>-<branch>.md` 로 feature 브랜치에 커밋 → squash 시 main 에 자연 축적 |
+| [`/maymust:self-review`](plugins/maymust/skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
 
 ## 설치 — 팀원용
 
