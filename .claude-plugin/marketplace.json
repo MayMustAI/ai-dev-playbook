@@ -6,7 +6,10 @@
   "plugins": [
     {
       "name": "maymust",
-      "source": ".",
+      "source": {
+        "source": "github",
+        "repo": "MayMustAI/ai-dev-playbook"
+      },
       "description": "MayMust 팀 공용 Claude Code 스킬 — /commit · /pull-request · /merge · /worklog · /self-review",
       "version": "0.2.0"
     }
