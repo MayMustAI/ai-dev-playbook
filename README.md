@@ -2,7 +2,7 @@
 
 MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
-이 레포는 **Claude Code 플러그인** 으로 배포되어, 팀원 전체가 동일한 팀 컨벤션 기반 스킬을 씁니다. 장기적으로는 팀 개발 방법론을 담는 플레이북 레포로 확장됩니다.
+이 레포는 **Claude Code 플러그인** 으로 배포되어, 팀원 전체가 동일한 팀 컨벤션 기반 스킬을 씁니다.
 
 ## 이 레포에 뭐가 있나
 
@@ -12,8 +12,6 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `plugins/maymust/.claude-plugin/plugin.json` | `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/skills/` | 5개 팀 공용 스킬 (아래 표) |
 | `plugins/maymust/hooks/` | 팀 가드 훅 (dev·main 직접 커밋 시 사용자 확인) |
-| `playbook/` | 팀 개발 방법론 문서 (작성 예정) |
-| `templates/` | PR · Worklog 등 공용 템플릿 (작성 예정) |
 
 ## 스킬 목록
 
@@ -96,12 +94,3 @@ claude --plugin-dir .
 ```
 
 변경은 브랜치 → PR → 리뷰 → **squash merge** (자체 스킬을 써서 도그푸딩).
-
-## 상태
-
-- [x] 레포 초기 구조
-- [x] `commit` · `pull-request` 스킬 정의
-- [x] Claude Code 플러그인 패키징
-- [x] Tier 1 스킬 (`merge` · `worklog` · `self-review`)
-- [x] 설치·호출 검증 (CLI + Desktop Code 탭)
-- [ ] `playbook/` 문서 (발표 자료 기반)
