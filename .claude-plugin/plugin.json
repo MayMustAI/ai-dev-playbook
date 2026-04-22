@@ -1,9 +1,10 @@
 {
   "name": "maymust",
   "description": "MayMust 팀 공용 Claude Code 스킬 — /commit · /pull-request · /merge · /worklog · /self-review. 팀 컨벤션(한글 본문, Conventional Commits, squash-merge, 5단계 자기 검증 루프, 듀얼 오디언스 PR, 작업당 한 장 Worklog) 을 단일 플러그인으로 강제",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "MayMust"
   },
-  "homepage": "https://github.com/MayMustAI/ai-dev-playbook"
+  "homepage": "https://github.com/MayMustAI/ai-dev-playbook",
+  "skills": "./skills"
 }

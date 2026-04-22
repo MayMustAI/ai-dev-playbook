@@ -1,5 +1,4 @@
 ---
-name: worklog
 description: 작업 단위로 한 장짜리 Worklog 를 관리. 현재 브랜치 기반으로 .worklogs/ 에 생성·조회·진행 로그 추가·완료 처리. feature 브랜치에 커밋되어 squash merge 시 main 에 자연 축적되는 팀 작업 아카이브. "worklog 시작", "진행 로그 남겨줘", "/worklog" 호출 시 사용.
 ---
 
