@@ -80,7 +80,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
 **Desktop (Code 탭)**: Plugins UI 에서 마켓플레이스 자동 업데이트, 또는 수동 "Refresh".
 
-> 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version` 에서 관리합니다 (SemVer). 현재: **0.2.4**.
+> 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version` 에서 관리합니다 (SemVer). 현재: **0.2.5**.
 
 ## 개발 — 스킬 수정 시
 
