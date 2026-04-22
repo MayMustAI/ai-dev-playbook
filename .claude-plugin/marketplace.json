@@ -8,7 +8,7 @@
       "name": "maymust",
       "source": "./plugins/maymust",
       "description": "MayMust 팀 공용 Claude Code 스킬 — /commit · /pull-request · /merge · /worklog · /self-review",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "author": {
         "name": "MayMust"
       },

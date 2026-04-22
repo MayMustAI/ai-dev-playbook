@@ -12,6 +12,7 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 - **PR 제목 = `/commit` 제목 규약 그대로** — 이 PR 이 squash-merge 되면 그 제목이 커밋 메시지가 됨
 - **PR 본문은 짧고 구조 고정** — 깊은 기술 디테일은 각 커밋 본문에, PR 본문은 "게이트 통과 증거" + "리뷰 유도 prompt"
 - **베이스 브랜치 기본 `dev`** (main 머지는 릴리즈 PR 만)
+- **diff 범위 = 브랜치 전체 (`<base>..HEAD`)** — 마지막 커밋·`HEAD~1`·최근 N개만 보고 PR 작성 절대 금지. PR 본문은 브랜치가 base 에서 분기한 뒤의 **모든** 변경을 커버. 5개 커밋이든 50개 커밋이든 전부 읽고 통합 서술한다
 - **5단계 루프 체크는 대화형 확인** — 임의 `[x]` 금지. 안 한 건 `[ ]` + 사유
 
 ## 왜 이 본문 구조인가
@@ -124,12 +125,13 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
    - `git status` — uncommitted 있으면 커밋 먼저 유도
    - `git rev-list @{u}..HEAD 2>/dev/null` — 미푸시 커밋 있으면 `git push -u origin <branch>`
 2. **베이스 브랜치 결정** — 기본 `dev`. 사용자가 명시하면 변경
-3. **규모 판단**
-   - `git diff --stat <base>...HEAD`
-   - 파일 수 · LOC · 모듈 범위로 소형/중형/대형 선택
+3. **브랜치 전체 변경 파악** (필수)
+   - `git log <base>..HEAD --oneline` — 브랜치에 쌓인 모든 커밋 파악
+   - `git diff --stat <base>...HEAD` — 파일 수·LOC·모듈 범위 (규모 결정: 소형/중형/대형)
+   - `git diff <base>...HEAD` — **실제 diff 내용 정독**. stat 만 읽고 PR 작성 금지. 단, 초대형(>2000 LOC)은 파일 그룹별로 나눠 읽되 전체를 커버할 것
 4. **제목 초안**
-   - `git log <base>..HEAD --oneline` 으로 커밋 분석
-   - 단일 의미면 그대로 사용, 여러 커밋이면 대표 feat/fix 추출
+   - 단일 의미면 해당 커밋 제목 그대로 사용, 여러 커밋이면 **브랜치 전체**를 대표하는 feat/fix 추출
+   - "이 PR 이 dev 에 머지되면 git log 에 뭐라고 남길지" 기준으로 결정
 5. **배지 판단** — diff 에서 API 시그니처 변경·migration 파일·auth 코드 변경 감지 시 제안
 6. **본문 초안 작성** — 규모별 템플릿
 7. **5단계 루프 대화형 확인**
@@ -150,6 +152,8 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 
 ## 금지 사항
 
+- ❌ **마지막 커밋 · `HEAD~1` · 최근 N개 커밋만 보고 PR 작성** — 반드시 `<base>..HEAD` 전체 범위 읽을 것
+- ❌ **`git diff --stat` 만 보고 본문 작성** — stat 은 규모 판단용, 본문은 실제 `git diff <base>...HEAD` 내용 기반으로 써야 함
 - ❌ 5단계 체크박스를 확인 없이 `[x]` 로 찍기 — 게이트 무력화
 - ❌ `Co-Authored-By` 추가 (글로벌 정책)
 - ❌ 제목에 `(#N)` 수동 첨부
