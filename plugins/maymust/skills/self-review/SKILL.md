@@ -1,4 +1,5 @@
 ---
+name: self-review
 description: 5단계 루프 step 2 — PR 을 "처음 보는 것처럼" 리뷰. PR 본문의 Why/Design decisions/Out of scope 를 "의도" 로 삼고 diff 를 "구현" 으로 본 뒤 일치 여부·엣지 케이스·복잡도·테스트 공백을 구조화된 찾기로 출력. "셀프 리뷰", "PR 리뷰해줘", "/self-review" 호출 시 사용.
 ---
 

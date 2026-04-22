@@ -1,4 +1,5 @@
 ---
+name: pull-request
 description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변경 규모를 분석해 PR 제목(=`/commit` 규약 그대로)과 듀얼 오디언스(사람+AI 리뷰어) 최적화 본문을 제안하고, 5단계 루프를 대화형으로 확인한 뒤 `gh pr create` 로 실행. "PR 올려줘", "풀리퀘 만들어줘", "/pull-request" 호출 시 사용.
 ---
 

@@ -1,4 +1,5 @@
 ---
+name: merge
 description: MayMust 팀 컨벤션으로 Pull Request를 squash-merge. 게이트(작성자 본인 · 리뷰 승인 · mergeable · CI 통과)를 체크하고, PR 본문에서 Self-verification/Screenshots 섹션을 스트립한 깨끗한 squash 메시지로 머지한 뒤 dev 로컬 동기화·feature 브랜치 정리까지 수행. "머지해줘", "merge PR", "/merge" 호출 시 사용.
 ---
 

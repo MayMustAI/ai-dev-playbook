@@ -1,4 +1,5 @@
 ---
+name: commit
 description: MayMust 팀 컨벤션으로 git 커밋을 생성. 스테이지된 변경을 분석해 Conventional Commits 형식(한글 본문)으로 메시지를 제안·실행. meaningful 모드(본문 포함, 대부분의 의미 있는 작업)와 wip 모드(제목만, feature 브랜치 임시 저장)를 구분해 지원. "커밋 메시지 뽑아줘", "이거 커밋해줘", "/commit" 호출 시 사용.
 ---
 
