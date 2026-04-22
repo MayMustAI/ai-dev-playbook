@@ -11,6 +11,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `.claude-plugin/marketplace.json` | 팀 내부 마켓플레이스 정의 |
 | `plugins/maymust/.claude-plugin/plugin.json` | `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/skills/` | 5개 팀 공용 스킬 (아래 표) |
+| `plugins/maymust/hooks/` | 팀 가드 훅 (dev·main 직접 커밋 시 사용자 확인) |
 | `playbook/` | 팀 개발 방법론 문서 (작성 예정) |
 | `templates/` | PR · Worklog 등 공용 템플릿 (작성 예정) |
 
@@ -80,7 +81,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
 **Desktop (Code 탭)**: Plugins UI 에서 마켓플레이스 자동 업데이트, 또는 수동 "Refresh".
 
-> 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version` 에서 관리합니다 (SemVer). 현재: **0.2.5**.
+> 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version` 에서 관리합니다 (SemVer). 현재: **0.3.0**.
 
 ## 개발 — 스킬 수정 시
 
