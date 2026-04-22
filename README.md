@@ -31,6 +31,6 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
 - [x] 레포 초기 구조
 - [x] `commit` 스킬 정의
-- [ ] `pull-request` 스킬 정의
+- [x] `pull-request` 스킬 정의
 - [ ] `playbook/` 문서 (발표 자료 기반)
 - [ ] 스킬 배포 방식 확정

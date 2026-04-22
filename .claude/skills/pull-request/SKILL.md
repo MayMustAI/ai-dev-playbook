@@ -1,39 +1,254 @@
 ---
 name: pull-request
-description: MayMust 팀 컨벤션에 맞는 Pull Request를 생성합니다. 브랜치 변경을 분석해 PR 제목·본문을 제안하고, 확인 후 `gh pr create` 로 올립니다. 이 스킬은 팀과 함께 설계하는 중이며 컨벤션 확정 후 정식 버전이 됩니다.
+description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변경 규모를 분석해 PR 제목(=`/commit` 규약 그대로)과 듀얼 오디언스(사람+AI 리뷰어) 최적화 본문을 제안하고, 5단계 루프를 대화형으로 확인한 뒤 `gh pr create` 로 실행. "PR 올려줘", "풀리퀘 만들어줘", "/pull-request" 호출 시 사용.
 ---
 
 # `/pull-request` — 팀 공용 PR 생성 스킬
 
-> 🚧 **Draft.** 아직 컨벤션이 확정되지 않았습니다. 다음 항목을 팀과 결정한 뒤 이 문서를 채웁니다.
+> PR 본문은 **사람 리뷰어가 30초 스캔** + **동료의 AI 리뷰어가 claim 검증** 을 동시에 잘 하도록 설계한다.
 
-## 결정해야 할 것
+## 핵심 원칙
 
-- [ ] PR 제목 포맷 (이게 squash merge 시 커밋 메시지가 됨)
-- [ ] 본문 필수 섹션 — 예: `Summary` / `What Changed` / `Test Plan` / `Worklog 링크`
-- [ ] 자기검증 체크리스트 (5단계 루프 중 어떤 걸 본문에 명시할지)
-- [ ] 베이스 브랜치 기본값 (`dev` 고정?)
-- [ ] 레이블 · 리뷰어 · 드래프트 정책
+- **PR 제목 = `/commit` 제목 규약 그대로** — 이 PR 이 squash-merge 되면 그 제목이 커밋 메시지가 됨
+- **PR 본문은 짧고 구조 고정** — 깊은 기술 디테일은 각 커밋 본문에, PR 본문은 "게이트 통과 증거" + "리뷰 유도 prompt"
+- **베이스 브랜치 기본 `dev`** (main 머지는 릴리즈 PR 만)
+- **5단계 루프 체크는 대화형 확인** — 임의 `[x]` 금지. 안 한 건 `[ ]` + 사유
 
-## 참고 — 발표에서 합의된 전제
+## 왜 이 본문 구조인가
 
-- **5단계 루프**를 PR 올리기 전에 통과:
-  1. 직접 테스트
-  2. 세션 초기화 후 셀프 리뷰
-  3. 다른 LLM 에게 PR 리뷰
-  4. 피드백 선별 수용
-  5. Playwright 로 브라우저 검증 → 테스트 코드로 저장
-- 작업마다 **Worklog 한 장** 을 남김 → PR 본문에서 링크
-- 머지는 **squash merge** — 그래서 PR 제목이 사실상 최종 커밋 메시지
+| 사람 리뷰어 | AI 리뷰어 |
+| --- | --- |
+| 30초 스캔으로 스코프 파악 | 명시된 의도·불변식 기준으로 코드 검증 |
+| 어디 집중할지 안내 필요 | Out of scope 표시가 있어야 false-positive 방지 |
+| 스크린샷·Before/After | Design decision 의 이유가 코드로 뒷받침되는지 체크 |
 
-## 동작 설계 (초안)
+→ PR 본문의 각 섹션 ≈ "AI 에게 던지는 claim". 사람은 claim 이 전략적으로 말이 되는지, AI 는 claim 이 코드로 성립하는지.
 
-1. `git log base..HEAD` · `git diff base...HEAD` 로 브랜치 변경 파악
-2. 5단계 루프 통과 여부 확인 (대화로 물어보거나 체크리스트 제시)
-3. 팀 PR 템플릿에 맞춰 제목·본문 초안 제시
-4. 필요시 브랜치 푸시
-5. 사용자 승인 후 `gh pr create --base <default> ...`
+## 제목 컨벤션 — `/commit` 과 동일
+
+```
+<type>(<scope>): <한글 설명>
+```
+
+- 타입·스코프·언어 규약은 [commit 스킬](../commit/SKILL.md) 참조
+- **`(#N)` 수동 추가 금지** — PR 번호는 GitHub 이 squash-merge 시 자동 첨부
+- 여러 커밋을 묶은 PR 이면, **대표가 될 제목** 하나를 추출 (보통 가장 큰 feat/fix)
+
+## 본문 구조 (규모에 따라 차등 적용)
+
+### 규모 기준
+
+| 규모 | 기준 | 섹션 |
+| --- | --- | --- |
+| **소형** | <100 LOC · 1–2 파일 · 버그픽스 한 방 | Why + What changed + Self-verification |
+| **중형** | 그 중간 | 소형 + Review focus |
+| **대형** | >500 LOC · 여러 모듈 · 리팩터·마이그레이션 | 전체 섹션 |
+
+스킬이 `git diff --stat base...HEAD` 로 규모 판단 → 구조 제안 → 사용자 조정.
+
+### 섹션 템플릿 (전체)
+
+```markdown
+<상단 배지: 🚨 Breaking change / ⚠️ Migration / 🔒 Security — 해당 시만>
+
+## Why
+<1 문단: 문제 → 해결 → 결과. "이전에는 X, 이제 Y" 패턴 권장>
+
+## What changed
+- Backend: <1줄 요약>
+- Frontend: <1줄 요약>
+- Infra: <1줄 요약>
+
+## Design decisions
+- <선택 A (vs 고려한 B)>: <이유> — 리뷰어는 이 이유가 성립하는지 체크
+- 불변식: <지켜야 할 규칙. 예: "cache key 에 regionID 필수">
+
+## Review focus
+- 🔍 주로 봐주세요: <위험 지점 / 설계 판단 지점 — 파일·함수 단위>
+- ⏭️ 기계적 변경 (skip OK): <rename / fixture / 일괄 replace>
+
+## Screenshots (UI 변경 시 필수)
+| Before | After |
+| --- | --- |
+| <이미지> | <이미지> |
+
+## Out of scope / Follow-up
+- <의도적으로 이 PR 에서 제외한 것 — AI 가 "빠졌다" 고 잘못 지적하지 않게>
+- Follow-up PR: <있으면 링크/계획>
+
+## Self-verification (5단계 루프)
+- [x] 1. 직접 테스트 — <어떤 시나리오 눌렀는지>
+- [x] 2. 세션 초기화 셀프 리뷰 — <무엇을 찾아 고쳤는지>
+- [x] 3. 다른 LLM PR 리뷰 — <모델명> · <피드백 요지>
+- [x] 4. 피드백 선별 — 수용 N, 거절 N (<거절 이유>)
+- [x] 5. Playwright — <테스트 파일 경로> 또는 N/A (<사유: 백엔드 전용 등>)
+
+## Worklog
+<링크 또는 3–5줄 요약>
+```
+
+### 소형 템플릿
+
+```markdown
+## Why
+<1 문단>
+
+## What changed
+<1–2줄 요약>
+
+## Self-verification
+- [x] 1. 직접 테스트 — ...
+- [x] 2. 셀프 리뷰 — ...
+- [x] 3. LLM 리뷰 — <모델> · <요지>
+- [ ] 4. 피드백 없었음
+- [x] 5. N/A — <사유>
+
+## Worklog
+<링크>
+```
+
+## 상단 배지 기준
+
+| 배지 | 언제 |
+| --- | --- |
+| 🚨 **Breaking change** | 기존 API·스키마·config 계약이 깨짐. 소비자 측 변경 필요 |
+| ⚠️ **Migration** | DB 마이그레이션, 데이터 백필, 배포 순서 주의 필요 |
+| 🔒 **Security** | 인증·권한·시크릿 취급·외부 입력 검증 관련 변경 |
+
+해당 없으면 배지 생략.
+
+## 워크플로우
+
+1. **브랜치 · 푸시 상태 확인**
+   - `git rev-parse --abbrev-ref HEAD` — 현 브랜치
+   - `git status` — uncommitted 있으면 커밋 먼저 유도
+   - `git rev-list @{u}..HEAD 2>/dev/null` — 미푸시 커밋 있으면 `git push -u origin <branch>`
+2. **베이스 브랜치 결정** — 기본 `dev`. 사용자가 명시하면 변경
+3. **규모 판단**
+   - `git diff --stat <base>...HEAD`
+   - 파일 수 · LOC · 모듈 범위로 소형/중형/대형 선택
+4. **제목 초안**
+   - `git log <base>..HEAD --oneline` 으로 커밋 분석
+   - 단일 의미면 그대로 사용, 여러 커밋이면 대표 feat/fix 추출
+5. **배지 판단** — diff 에서 API 시그니처 변경·migration 파일·auth 코드 변경 감지 시 제안
+6. **본문 초안 작성** — 규모별 템플릿
+7. **5단계 루프 대화형 확인**
+   - 각 단계별로 물음:
+     - "1. 직접 테스트 — 어떤 시나리오 눌러보셨나요?"
+     - "2. 세션 초기화 후 셀프 리뷰 — 결과는?"
+     - "3. 다른 LLM 으로 PR 리뷰 — 어느 모델, 뭐라고 하던가요?"
+     - "4. 받은 피드백 중 수용 / 거절 갯수, 거절 이유는?"
+     - "5. Playwright 테스트 — 경로 또는 N/A 사유?"
+   - 답 없는 단계는 **`[ ]` + "미수행: <이유>"** 로 기록. 절대 `[x]` 로 가짜 통과 처리 금지
+8. **Worklog 링크 물어봄** — 없으면 인라인 3–5줄 요약 유도
+9. **Review focus · Out of scope 확인** — 중대형이면 사용자가 직접 채워야 의미 있음. 스킬이 후보를 diff 에서 추천
+10. **스크린샷 확인** — UI 변경 감지 시 "Before/After 스크린샷 붙여주세요" 유도. 없으면 `Screenshots` 섹션에 TODO 남김
+11. **최종 본문 프리뷰 → 사용자 승인**
+12. **draft / ready 확인**
+13. **실행**: `gh pr create --base <base> --head <branch> --title "..." --body "$(cat <<'EOF' ... EOF)"` (draft 시 `--draft`)
+14. **결과 보고** — PR URL · 번호
+
+## 금지 사항
+
+- ❌ 5단계 체크박스를 확인 없이 `[x]` 로 찍기 — 게이트 무력화
+- ❌ `Co-Authored-By` 추가 (글로벌 정책)
+- ❌ 제목에 `(#N)` 수동 첨부
+- ❌ 베이스를 `main` 으로 (릴리즈 PR 이라고 명시된 경우만 예외)
+- ❌ Worklog 섹션 자체 생략 (링크가 없으면 인라인 요약이라도 남김)
+- ❌ "변경사항을 모두 diff 에서 열거" — PR 본문을 diff 재탕으로 만들면 AI·사람 둘 다 못 읽음
+- ❌ UI 변경에 스크린샷 없이 ready 로 올리기
+
+## 예시
+
+### 소형 — 버그픽스 한 방
+
+**제목**: `fix(health): /healthz 에서 region-scoped cluster cache 체크 제거`
+
+**본문**:
+
+```markdown
+## Why
+배포 후 /healthz 가 503 으로 떨어지던 문제. region 격리 리팩터 과정에서
+handleHealth 가 `a.clusterCacheFor(r.Context())` 를 호출하는데 /healthz 는
+region-whitelist 경로라 ctx 에 region 이 없음 → nil → 503.
+
+process liveness 관점에서 /healthz 는 region 무관해야 함. per-region
+준비도는 필요 시 `/api/regions/<id>/health` 로 분리.
+
+## What changed
+- [main.go] handleHealth 에서 clusterCacheFor 호출 제거, static 200 응답
+
+## Self-verification
+- [x] 1. 직접 테스트 — `curl /healthz` → 200
+- [x] 2. 셀프 리뷰 — /healthz 외 region-whitelist 경로에 clusterCacheFor 호출 없는지 확인
+- [ ] 3. LLM 리뷰 — 건너뜀 (1파일 1함수 트리비얼)
+- [ ] 4. 피드백 없음
+- [x] 5. N/A — 백엔드 핸들러
+
+## Worklog
+작업 1시간. 배포 직후 알람으로 탐지 → fix → 재배포.
+```
+
+### 대형 — 리팩터 + 신규 기능
+
+**제목**: `feat(region): 리전별 K8s/VM 관리 + SR-IOV VF 드릴다운 + 빈 리전 UI 가드`
+
+**본문**:
+
+```markdown
+⚠️ Migration — .env 의 KUBECONFIG/METRICS_BASE_URL 을 Settings UI 로 이전
+
+## Why
+UFM/BMC 만 리전별이었고 K8s/VM 은 프로세스 전역 싱글톤이었던 비대칭 해소.
+리전이 tenant boundary 가 되어 모든 인프라 엔드포인트가 리전마다 독립됨.
+병행해서 SR-IOV VF 를 5번째 관측 축으로 추가해 Pod 단위 NIC 귀속 가능.
+
+## What changed
+- Backend: region_runtime 단일 구조체 · regionRuntimeRegistry · kubeconfig_validator
+  · sriov_service · correlation_service VF trigger
+- Frontend: apiFetch ?region 자동 주입 · Settings K8s/VM 탭 · /vf-mapping 페이지
+  · RegionCapabilityGuard
+- Infra: sriov-network-metrics-exporter DaemonSet · VMPodScrape · .env 축소
+
+## Design decisions
+- **regionRuntime 단일 struct** (vs 3 parallel map): clone/sync 경로 줄이고 atomic
+  교체 쉬움 → 리뷰어는 applyRegionSettings 의 swap 지점이 lock-free 로 맞는지 체크
+- **조인 키 = (instance, pciAddr) 페어**: pciAddr 단독은 host-local 이라 멀티노드에서
+  충돌 → 리뷰어는 모든 SR-IOV 조회 경로에서 instance 라벨이 포함되는지 체크
+- **불변식**: response mask · in-memory clone · response shape 세 경로 모두에 구조체
+  필드 동기화 필요. 하나라도 누락되면 round-trip 에서 필드 소실
+
+## Review focus
+- 🔍 주로: region_runtime 의 lock 정책 · cluster_cache.Stop 순서 · middleware_region
+  의 화이트리스트 경로 · sriov correlation 의 tree merge
+- ⏭️ Skip OK: 57개 apiFetch 호출부의 기계적 시그니처 유지 · i18n 키 추가 · mock 핸들러
+
+## Screenshots
+| Before | After |
+| --- | --- |
+| Settings 에 K8s 탭 없음 | K8s · VictoriaMetrics 2 탭 + Primary 배지 |
+| 빈 리전 → 이전 데이터 stale 표시 | RegionCapabilityGuard 로 가드 페이지 |
+
+## Out of scope / Follow-up
+- 각 서비스 메서드를 `rt *regionRuntime` 인자로 변경 — 기계적 migration PR 로 분리
+- 모든 cache/inflight key 에 regionID 포함 — 위와 동일 PR 에서
+- PF → UFM port_guid 결정적 매핑 v2
+- IB/ConnectX-6 지원은 POC 클러스터 실측 검증 필요
+
+## Self-verification
+- [x] 1. 직접 테스트 — region A/B 추가·삭제·primary 전환 · /vf-mapping · 빈 리전 가드
+- [x] 2. 셀프 리뷰 — Codex 리뷰 4개 P0/P1 발견·수정 (별도 커밋)
+- [x] 3. LLM 리뷰 — Codex · round-trip + 런타임 격리 + 캐시 격리 블로커 지적
+- [x] 4. 피드백 선별 — 4개 전부 수용 (P0 2 + P1 2)
+- [x] 5. Playwright — 미작성, 이후 PR 에서 추가. 현재는 수동 시나리오로 대체
+
+## Worklog
+총 3일. day1: region runtime · day2: SR-IOV · day3: 리뷰 반영 + 가드 확장.
+실배포 POC 클러스터에서 SDR cache · IPMI provider 이슈 별건으로 튀어 #4 에서 처리.
+```
 
 ---
 
-_정식 스킬로 완성되면 이 경고 블록은 제거됩니다._
+## 배포 방식 (현재 단계)
+
+> 스킬 배포 방식(플러그인 vs 심링크 vs 복사)은 팀과 결정 후 확정. 결정 전까지는 이 레포를 클론해 각자 프로젝트의 `.claude/skills/` 아래로 복사하거나 심링크.
