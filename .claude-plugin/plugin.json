@@ -1,0 +1,9 @@
+{
+  "name": "maymust",
+  "description": "MayMust 팀 공용 Claude Code 스킬 — /commit (Conventional Commits 한글 본문, meaningful/wip 2 모드) 과 /pull-request (5단계 자기 검증 루프, 듀얼 오디언스 최적화 본문)",
+  "version": "0.1.0",
+  "author": {
+    "name": "MayMust"
+  },
+  "homepage": "https://github.com/MayMustAI/ai-dev-playbook"
+}
