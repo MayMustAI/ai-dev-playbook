@@ -42,10 +42,6 @@ Code 탭의 `+` 버튼 → **Plugins** → **Manage plugins** → **Add plugin**
 
 > **제약**: Claude Desktop 의 **Remote 세션** 에서는 플러그인이 로드되지 않습니다. Local 또는 SSH 세션에서만 작동.
 
-### 인증
-
-Private 레포 접근은 로컬의 `gh auth` 설정을 자동 사용합니다. 미리 `gh auth login` 으로 `MayMustAI` 조직 접근 권한이 있는지 확인해 주세요.
-
 ## 일하는 흐름 (스킬이 엮이는 방식)
 
 ```

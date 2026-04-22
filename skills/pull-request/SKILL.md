@@ -162,25 +162,25 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 
 ### 소형 — 버그픽스 한 방
 
-**제목**: `fix(health): /healthz 에서 region-scoped cluster cache 체크 제거`
+**제목**: `fix(health): /healthz 에서 tenant-scoped DB pool 체크 제거`
 
 **본문**:
 
 ```markdown
 ## Why
-배포 후 /healthz 가 503 으로 떨어지던 문제. region 격리 리팩터 과정에서
-handleHealth 가 `a.clusterCacheFor(r.Context())` 를 호출하는데 /healthz 는
-region-whitelist 경로라 ctx 에 region 이 없음 → nil → 503.
+배포 후 /healthz 가 503 으로 떨어지던 문제. tenant 격리 리팩터 과정에서
+handleHealth 가 `a.dbPoolFor(r.Context())` 를 호출하는데 /healthz 는
+tenant-whitelist 경로라 ctx 에 tenant 가 없음 → nil → 503.
 
-process liveness 관점에서 /healthz 는 region 무관해야 함. per-region
-준비도는 필요 시 `/api/regions/<id>/health` 로 분리.
+process liveness 관점에서 /healthz 는 tenant 무관해야 함. per-tenant
+준비도는 필요 시 `/api/tenants/<id>/health` 로 분리.
 
 ## What changed
-- [main.go] handleHealth 에서 clusterCacheFor 호출 제거, static 200 응답
+- [main.go] handleHealth 에서 dbPoolFor 호출 제거, static 200 응답
 
 ## Self-verification
 - [x] 1. 직접 테스트 — `curl /healthz` → 200
-- [x] 2. 셀프 리뷰 — /healthz 외 region-whitelist 경로에 clusterCacheFor 호출 없는지 확인
+- [x] 2. 셀프 리뷰 — /healthz 외 tenant-whitelist 경로에 dbPoolFor 호출 없는지 확인
 - [ ] 3. LLM 리뷰 — 건너뜀 (1파일 1함수 트리비얼)
 - [ ] 4. 피드백 없음
 - [x] 5. N/A — 백엔드 핸들러
@@ -191,64 +191,57 @@ process liveness 관점에서 /healthz 는 region 무관해야 함. per-region
 
 ### 대형 — 리팩터 + 신규 기능
 
-**제목**: `feat(region): 리전별 K8s/VM 관리 + SR-IOV VF 드릴다운 + 빈 리전 UI 가드`
+**제목**: `feat(tenant): 테넌트별 DB/Cache 관리 + 실시간 알림 센터 + 빈 테넌트 UI 가드`
 
 **본문**:
 
 ```markdown
-⚠️ Migration — .env 의 KUBECONFIG/METRICS_BASE_URL 을 Settings UI 로 이전
+⚠️ Migration — .env 의 DB_URL/CACHE_URL 을 Settings UI 로 이전
 
 ## Why
-UFM/BMC 만 리전별이었고 K8s/VM 은 프로세스 전역 싱글톤이었던 비대칭 해소.
-리전이 tenant boundary 가 되어 모든 인프라 엔드포인트가 리전마다 독립됨.
-병행해서 SR-IOV VF 를 5번째 관측 축으로 추가해 Pod 단위 NIC 귀속 가능.
+인증만 테넌트별이었고 DB/Cache 는 프로세스 전역 싱글톤이었던 비대칭 해소.
+테넌트가 격리 경계가 되어 모든 인프라 엔드포인트가 테넌트마다 독립됨.
+병행해서 실시간 알림 센터를 추가해 페이지 새로고침 없이 새 알림 확인 가능.
 
 ## What changed
-- Backend: region_runtime 단일 구조체 · regionRuntimeRegistry · kubeconfig_validator
-  · sriov_service · correlation_service VF trigger
-- Frontend: apiFetch ?region 자동 주입 · Settings K8s/VM 탭 · /vf-mapping 페이지
-  · RegionCapabilityGuard
-- Infra: sriov-network-metrics-exporter DaemonSet · VMPodScrape · .env 축소
+- Backend: tenantRuntime 단일 구조체 · tenantRuntimeRegistry · dbConfig_validator
+  · notify_service SSE 채널 · audit_service tenant-aware
+- Frontend: apiFetch ?tenant 자동 주입 · Settings DB/Cache 탭 · NotifyCenter
+  · TenantCapabilityGuard
+- Infra: notifications 테이블 마이그레이션 · .env 축소
 
 ## Design decisions
-- **regionRuntime 단일 struct** (vs 3 parallel map): clone/sync 경로 줄이고 atomic
-  교체 쉬움 → 리뷰어는 applyRegionSettings 의 swap 지점이 lock-free 로 맞는지 체크
-- **조인 키 = (instance, pciAddr) 페어**: pciAddr 단독은 host-local 이라 멀티노드에서
-  충돌 → 리뷰어는 모든 SR-IOV 조회 경로에서 instance 라벨이 포함되는지 체크
-- **불변식**: response mask · in-memory clone · response shape 세 경로 모두에 구조체
+- **tenantRuntime 단일 struct** (vs 3 parallel map): clone/sync 경로 줄이고 atomic
+  교체 쉬움 → 리뷰어는 applyTenantSettings 의 swap 지점이 lock-free 인지 체크
+- **알림 키 = (tenant_id, user_id) 페어**: user_id 단독은 cross-tenant 충돌 가능
+  → 리뷰어는 모든 notify 조회 경로에서 tenant_id 가 포함되는지 체크
+- **불변식**: response mask · in-memory clone · response shape 세 경로 모두 구조체
   필드 동기화 필요. 하나라도 누락되면 round-trip 에서 필드 소실
 
 ## Review focus
-- 🔍 주로: region_runtime 의 lock 정책 · cluster_cache.Stop 순서 · middleware_region
-  의 화이트리스트 경로 · sriov correlation 의 tree merge
+- 🔍 주로: tenantRuntime 의 lock 정책 · dbPool.Close 순서 · middleware_tenant
+  의 화이트리스트 경로 · SSE 스트림 재연결 로직
 - ⏭️ Skip OK: 57개 apiFetch 호출부의 기계적 시그니처 유지 · i18n 키 추가 · mock 핸들러
 
 ## Screenshots
 | Before | After |
 | --- | --- |
-| Settings 에 K8s 탭 없음 | K8s · VictoriaMetrics 2 탭 + Primary 배지 |
-| 빈 리전 → 이전 데이터 stale 표시 | RegionCapabilityGuard 로 가드 페이지 |
+| Settings 에 DB 탭 없음 | DB · Cache 2 탭 + Primary 배지 |
+| 새 알림 새로고침 필요 | NotifyCenter + 실시간 unread 배지 |
 
 ## Out of scope / Follow-up
-- 각 서비스 메서드를 `rt *regionRuntime` 인자로 변경 — 기계적 migration PR 로 분리
-- 모든 cache/inflight key 에 regionID 포함 — 위와 동일 PR 에서
-- PF → UFM port_guid 결정적 매핑 v2
-- IB/ConnectX-6 지원은 POC 클러스터 실측 검증 필요
+- 각 서비스 메서드를 `rt *tenantRuntime` 인자로 변경 — 기계적 migration PR 로 분리
+- 모든 cache/inflight key 에 tenant_id 포함 — 위와 동일 PR 에서
+- SSE 서버 수평 확장 (Redis PubSub) 은 v2
+- 모바일 푸시 알림은 POC 단계
 
 ## Self-verification
-- [x] 1. 직접 테스트 — region A/B 추가·삭제·primary 전환 · /vf-mapping · 빈 리전 가드
-- [x] 2. 셀프 리뷰 — Codex 리뷰 4개 P0/P1 발견·수정 (별도 커밋)
-- [x] 3. LLM 리뷰 — Codex · round-trip + 런타임 격리 + 캐시 격리 블로커 지적
-- [x] 4. 피드백 선별 — 4개 전부 수용 (P0 2 + P1 2)
+- [x] 1. 직접 테스트 — tenant A/B 추가·삭제·primary 전환 · NotifyCenter · 빈 테넌트 가드
+- [x] 2. 셀프 리뷰 — 리뷰에서 3개 P0/P1 발견·수정 (별도 커밋)
+- [x] 3. LLM 리뷰 — codex · round-trip + 런타임 격리 + 캐시 격리 블로커 지적
+- [x] 4. 피드백 선별 — 3개 전부 수용
 - [x] 5. Playwright — 미작성, 이후 PR 에서 추가. 현재는 수동 시나리오로 대체
 
 ## Worklog
-총 3일. day1: region runtime · day2: SR-IOV · day3: 리뷰 반영 + 가드 확장.
-실배포 POC 클러스터에서 SDR cache · IPMI provider 이슈 별건으로 튀어 #4 에서 처리.
+총 3일. day1: tenant runtime · day2: 알림 채널 · day3: 리뷰 반영 + 가드 확장.
 ```
-
----
-
-## 배포 방식 (현재 단계)
-
-> 스킬 배포 방식(플러그인 vs 심링크 vs 복사)은 팀과 결정 후 확정. 결정 전까지는 이 레포를 클론해 각자 프로젝트의 `.claude/skills/` 아래로 복사하거나 심링크.

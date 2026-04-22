@@ -27,8 +27,8 @@ description: MayMust 팀 컨벤션으로 git 커밋을 생성. 스테이지된 �
 ```
 
 - **type** (Conventional Commits): `feat` `fix` `docs` `chore` `style` `refactor` `test` `perf` `build` `ci`
-- **scope**: 도메인 단위 소문자, 하이픈 허용 (`region`, `bmc`, `bmc-ipmi`, `sriov`, `ui`, `settings`, `health`). 여러 도메인 걸치면 대표 하나만. 적당한 스코프 없으면 생략 가능 (`docs: ...`)
-- **설명**: 한글 본문 + 영문 기술 용어 (`singleflight`, `TTL`, `round-trip`, `IPMI` 등)
+- **scope**: 도메인 단위 소문자, 하이픈 허용 (`auth`, `tenant`, `notify`, `cache`, `api`, `ui`, `settings`, `health`). 여러 도메인 걸치면 대표 하나만. 적당한 스코프 없으면 생략 가능 (`docs: ...`)
+- **설명**: 한글 본문 + 영문 기술 용어 (`singleflight`, `TTL`, `round-trip`, `backoff` 등)
 - **길이 제한 없음**. 구조 변경이면 핵심을 다 표현해도 됨 (한 줄에 담길 것)
 - **PR 번호 `(#N)` 수동 추가 금지** — GitHub squash-merge 가 자동 첨부
 - **Co-Authored-By 금지** — 모든 경우에
@@ -111,60 +111,67 @@ follow-up PR 으로 뺄 거리. 커밋 안에 "이건 여기까지, 다음은 �
 ### meaningful — 리뷰 블로커 처리
 
 ```
-fix(region): codex 리뷰 4개 블로커 처리 — round-trip + 런타임 격리 + 캐시 격리
+fix(cache): 리뷰 블로커 3개 처리 — 캐시 키 격리 + 시그니처 정리 + race
 
-Codex 리뷰에서 지적된 4개 P0/P1 이슈 수정. 전부 컴파일/유닛테스트는 통과
-하지만 통합 수준에서 region 격리가 동작하지 않던 문제.
+PR 리뷰에서 지적된 3개 P0/P1 이슈 수정. 전부 유닛테스트는 통과하지만
+멀티 테넌트 환경의 캐시 격리가 실제로는 동작하지 않던 문제.
 
-## P0-1: cloneRegionSettingsDocument 가 K8s/VM 필드 누락
-[region_settings_store.go] clone 함수가 K8sClusters/VmEndpoints/PrimaryClusterID/
-PrimaryVmEndpointID 를 복사하지 않아 State()/Replace() 라운드트립마다 신규
-필드가 소실. 저장은 되지만 applyRegionSettings 가 받아오는 사본은 empty →
-runtime registry 비어있음.
+## P0-1: cloneCacheConfig 가 신규 필드 누락
+[cache_store.go] clone 함수가 TenantKeys/PrimaryKeyID 를 복사하지 않아
+State()/Replace() 라운드트립마다 필드 소실. 저장은 되지만 applyCacheConfig
+가 받아오는 사본은 empty → runtime registry 비어있음.
 → 모든 필드를 clone 에 추가. 구조체 확장 시 clone 동반 변경 필요 경고 추가.
 
-## P0-2: ?region= 검증만 되고 핸들러가 primary runtime 을 그대로 사용
-middleware 가 region 을 ctx 에 주입했지만 핸들러들은 여전히 a.clusterCache
-전역 포인터를 읽어 선택한 region 과 무관하게 primary region 데이터만 반환.
-(... 중략 ...)
+## P0-2: ?tenant= 검증만 되고 핸들러가 primary runtime 을 그대로 사용
+middleware 가 tenant 를 ctx 에 주입했지만 핸들러들은 여전히 a.cache
+전역 포인터를 읽어 선택한 tenant 와 무관하게 primary 데이터만 반환.
+[middleware_tenant.go] a.cacheFor(ctx) 헬퍼 추가. 모든 a.cache 읽기를
+a.cacheFor(ctx) 로 교체.
+
+## P1-3: responseCache 가 tenant 분리 없이 전역 공유
+[response_cache.go] getOrSetJSONBytes 시그니처에 ctx 추가. 내부에서
+tenantCacheKey(ctx, key) 로 prefix 자동 주입. 기존 호출부 52곳에 ctx
+전달하도록 일괄 수정. 시그니처 변경은 의도적 — 누락 call site 가 컴파일
+에러로 즉시 발견됨.
 
 ## 검증
 - `go build ./...` + `go test -race -count=1 ./...` 전체 통과
 - `npm run lint` 경고 0 + `npm run build` 성공
-- 수동: region A/B 라운드트립 확인 필요 (integration)
+- 수동: tenant A/B 라운드트립 격리 확인 필요 (integration)
 ```
 
 ### meaningful — 신규 기능
 
 ```
-feat(sriov): Pod ↔ VF(instance,pciAddr) ↔ PF ↔ Host 드릴다운 + 상관분석 확장
+feat(notify): 실시간 알림 SSE 채널 + 알림 센터 UI
 
-SR-IOV VF 텔레메트리를 5번째 관측 축으로 추가해 Pod 단위 NIC 귀속을 가능
-하게 한다. 기존에는 UFM 혼잡 감지 시 "어느 학습잡 때문인지" 를 내려가지
-못했으나, 이제 fabric 신호와 VF 신호를 함께 보고 Pod 를 특정해 루트코즈를
-제시할 수 있다.
+이전에는 사용자가 페이지 새로고침해야 새 알림을 확인할 수 있었고, 알림을
+한 화면에 모아볼 공간도 없었다. SSE 기반 실시간 스트림과 통합 알림 센터를
+도입해 즉시 확인·관리 가능하게 한다.
 
 ## Backend
-- sriov_service: sriov-network-metrics-exporter PromQL 수집, (instance,pciAddr)
-  조인 키로 멀티노드 중복 pciAddr 분리
-- correlation_service: vf_network trigger + evalVfNetworkTree → Pod 드릴다운 추천
+- notify_service: SSE 채널 (/api/notify/stream) + PubSub 버스, 재연결 시
+  Last-Event-ID 기반 재전송
+- notify_handlers: POST /api/notify/{mark-read,mark-all-read,dismiss}
+- storage: notifications 테이블 + unread 인덱스 (tenant_id, user_id, read_at IS NULL)
 
 ## Frontend
-- /vf-mapping 신규 페이지 (Cytoscape 4계층 preset 드릴다운)
-- VfDetailDrawer (shadcn Sheet + KPI + Recharts 30m/30s history)
+- NotifyCenter (shadcn Sheet + 무한 스크롤, Badge 로 카테고리 구분)
+- useNotifyStream 훅 (EventSource + exponential backoff 재연결)
+- Header unread 배지 — 서버 재호출 없이 스트림으로만 갱신
 
 ## 테스트
-- backend: 8개 신규 유닛 테스트 통과
+- backend: 6개 신규 유닛 테스트 통과 (구독/해제, 배달, 재연결 idempotency)
 - frontend: npm run lint/build 통과
-- UI 수동 검증 미실시 — VITE_ENABLE_MOCKS=true npm run dev 로 /vf-mapping 확인 가능
+- UI 수동: 두 탭 동시 열고 한 쪽 발송 → 다른 쪽 즉시 반영 확인
 ```
 
 ### wip
 
 ```
-feat(sriov): WIP — VF drawer KPI 섹션 레이아웃 시도
+feat(notify): WIP — 알림 센터 무한 스크롤 페이지네이션 시도
 ```
 
 ```
-fix(bmc-ipmi): WIP — SDR cache TTL 30일 반영 중
+fix(cache): WIP — invalidation race 재현 케이스 작성 중
 ```

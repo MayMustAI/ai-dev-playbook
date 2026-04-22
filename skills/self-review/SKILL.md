@@ -138,30 +138,30 @@ description: 5단계 루프 step 2 — PR 을 "처음 보는 것처럼" 리뷰. 
 ⚠️ 동일 세션 리뷰 — 편향 가능
    세션 초기화 후 재리뷰 권장: `/clear` → `/maymust:self-review`
 
-# Self-review — PR #42: feat(region): 리전별 K8s/VM 관리
+# Self-review — PR #42: feat(tenant): 테넌트별 DB/Cache 관리
 
 ## 🚫 블로커
-- `region_settings_store.go:147` — clone() 이 새로 추가한 K8sClusters 필드를 복사하지 않음. State()/Replace() round-trip 마다 필드 소실 → runtime registry 비어있음. PR 의 "리전이 tenant boundary" 의도 자체가 깨짐
+- `tenant_settings_store.go:147` — clone() 이 새로 추가한 DBConfigs 필드를 복사하지 않음. State()/Replace() round-trip 마다 필드 소실 → runtime registry 비어있음. PR 의 "테넌트가 격리 경계" 의도 자체가 깨짐
 
 ## 🔧 머스트 픽스
-- `middleware_region.go:23` — ?region= 파싱 실패 시 400 반환해야 하는데 panic. 사용자 입력 unvalidated
-- `cluster_cache.go:89` — close(stopCh) 후 factory.Shutdown() 순서 반대. informer goroutine leak 가능
+- `middleware_tenant.go:23` — ?tenant= 파싱 실패 시 400 반환해야 하는데 panic. 사용자 입력 unvalidated
+- `db_pool.go:89` — close(stopCh) 후 factory.Shutdown() 순서 반대. connection goroutine leak 가능
 
 ## 💡 닛픽
-- `region_handlers.go:56` — `handleRegion` 보다 `handleRegionList` 가 구체적
-- middleware 로깅에 regionID 포함하면 debug 편함
+- `tenant_handlers.go:56` — `handleTenant` 보다 `handleTenantList` 가 구체적
+- middleware 로깅에 tenantID 포함하면 debug 편함
 
 ## 👍 좋음
-- apiFetch 래퍼에 ?region 자동 주입하는 설계 — 57개 호출부를 건드리지 않고 region-aware 로 만든 점이 깔끔
+- apiFetch 래퍼에 ?tenant 자동 주입하는 설계 — 57개 호출부를 건드리지 않고 tenant-aware 로 만든 점이 깔끔
 
 ## 📋 체크리스트 결과
 | 렌즈 | 결과 |
 | --- | --- |
 | 의도 일치 | 🚫 clone 누락으로 핵심 의도 깨짐 |
-| 엣지 케이스 | ⚠️ region 파싱 실패 경로 |
+| 엣지 케이스 | ⚠️ tenant 파싱 실패 경로 |
 | 잔재 | ✅ |
 | 복잡도 | ✅ |
 | 네이밍 | 💡 |
 | 테스트 | ⚠️ clone round-trip 테스트 없음 |
-| 보안·데이터 | ✅ kubeconfig 평문은 기존 UFM/BMC 와 동일 패턴으로 명시됨 |
+| 보안·데이터 | ✅ DB URL 평문은 기존 auth 와 동일 패턴으로 명시됨 |
 ```
