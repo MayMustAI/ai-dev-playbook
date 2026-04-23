@@ -15,10 +15,14 @@ status: complete
 
 ## 진행 로그
 
-- 13:20 — feature/remove-empty-dirs 브랜치 생성 (dev 브랜치도 이 시점에 신규 생성 후 origin 푸시)
-- 13:22 — `git rm -r playbook templates` 로 두 디렉터리 삭제
-- 13:25 — README grep 으로 참조 없음 재확인 (이전 0.3.0 커밋에서 이미 정렬됨)
-- 13:28 — worklog 정리 · 커밋 준비
+상대 마커 (세션 기준). 절대 시간은 커밋 메타데이터 참고.
+
+- +0m — feature/remove-empty-dirs 브랜치 생성 (dev 브랜치도 이 시점에 신규 생성 후 origin 푸시)
+- +2m — `git rm -r playbook templates` 로 두 디렉터리 삭제
+- +5m — README grep 으로 참조 없음 재확인 (이전 0.3.0 커밋에서 이미 정렬됨)
+- +8m — worklog 정리 · 커밋
+- +15m — 셀프 리뷰에서 닛픽 2건 발견 (worklog 타임스탬프 정확도 · .gitignore 주석 누락)
+- +17m — 후속 커밋으로 두 건 반영
 
 ## 막혔던 것 / 해결
 
