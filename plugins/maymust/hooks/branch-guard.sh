@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # MayMust 브랜치 가드 훅 — dev · main 에서 git commit 호출 시 사용자 확인 요청
 #
-# PreToolUse hook for the Bash tool. All Bash calls pass through; this script
-# filters to "git commit" invocations, checks the current branch, and returns an
-# "ask" decision when the branch is dev or main.
+# PreToolUse hook for Claude Bash and Codex shell tools. All shell calls pass
+# through; this script filters to "git commit" invocations, checks the current
+# branch, and returns an "ask" decision when the branch is dev or main.
 
 set -u
 
@@ -14,14 +14,16 @@ input=$(cat)
 command=$(printf '%s' "$input" | python3 -c "import json,sys
 try:
     d = json.load(sys.stdin)
-    print(d.get('tool_input', {}).get('command', ''))
+    tool_input = d.get('tool_input', {})
+    print(tool_input.get('command') or tool_input.get('cmd') or '')
 except Exception:
     pass" 2>/dev/null || true)
 
 cwd=$(printf '%s' "$input" | python3 -c "import json,sys
 try:
     d = json.load(sys.stdin)
-    print(d.get('cwd', ''))
+    tool_input = d.get('tool_input', {})
+    print(d.get('cwd') or tool_input.get('cwd') or tool_input.get('workdir') or '')
 except Exception:
     pass" 2>/dev/null || true)
 

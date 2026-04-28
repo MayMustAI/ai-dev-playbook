@@ -1,0 +1,16 @@
+{
+  "description": "MayMust 팀 가드 — Codex에서 dev · main에 직접 git commit 시 사용자 확인 요청",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "exec_command|shell_command|unified_exec|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"./hooks/branch-guard.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

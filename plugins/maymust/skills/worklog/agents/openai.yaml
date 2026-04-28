@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Worklog"
+  short_description: "작업 단위 Worklog를 생성하고 진행 로그를 관리"
+  default_prompt: "현재 작업의 MayMust worklog를 시작해줘."

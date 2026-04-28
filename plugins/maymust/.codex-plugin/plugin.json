@@ -1,0 +1,45 @@
+{
+  "name": "maymust",
+  "version": "0.3.1",
+  "description": "MayMust 팀 공용 Codex 스킬 — commit · pull-request · merge · worklog · self-review. 팀 컨벤션(한글 본문, Conventional Commits, squash-merge, 5단계 자기 검증 루프, 듀얼 오디언스 PR, 작업당 한 장 Worklog)을 단일 플러그인으로 제공",
+  "author": {
+    "name": "MayMust",
+    "url": "https://github.com/MayMustAI"
+  },
+  "homepage": "https://github.com/MayMustAI/ai-dev-playbook",
+  "repository": "https://github.com/MayMustAI/ai-dev-playbook",
+  "license": "MIT",
+  "keywords": [
+    "maymust",
+    "codex",
+    "git",
+    "pull-request",
+    "merge",
+    "worklog",
+    "review"
+  ],
+  "skills": "./skills/",
+  "hooks": "./hooks/codex-hooks.json",
+  "interface": {
+    "displayName": "MayMust AI Dev Playbook",
+    "shortDescription": "MayMust 팀 개발 컨벤션을 Codex 스킬로 실행",
+    "longDescription": "MayMust 팀의 커밋, PR 작성, squash merge, 셀프 리뷰, 작업 로그 컨벤션을 Codex에서 재사용 가능한 스킬로 제공합니다. Claude Code 플러그인과 같은 skills 디렉터리를 공유하되 Codex 전용 매니페스트와 훅 설정을 따로 둡니다.",
+    "developerName": "MayMust",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/MayMustAI/ai-dev-playbook",
+    "privacyPolicyURL": "https://github.com/MayMustAI/ai-dev-playbook",
+    "termsOfServiceURL": "https://github.com/MayMustAI/ai-dev-playbook",
+    "defaultPrompt": [
+      "MayMust 방식으로 커밋해줘",
+      "PR 본문을 MayMust 형식으로 만들어줘",
+      "현재 PR을 셀프 리뷰해줘"
+    ],
+    "brandColor": "#111827",
+    "screenshots": []
+  }
+}

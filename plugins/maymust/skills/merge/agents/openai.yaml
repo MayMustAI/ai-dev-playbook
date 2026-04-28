@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Merge"
+  short_description: "MayMust 팀 게이트를 확인하고 PR을 squash merge"
+  default_prompt: "현재 PR을 MayMust 방식으로 머지해줘."

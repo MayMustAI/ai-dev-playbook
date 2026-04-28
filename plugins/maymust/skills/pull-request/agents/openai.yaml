@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Pull Request"
+  short_description: "MayMust 팀 컨벤션으로 PR 제목과 본문을 작성"
+  default_prompt: "현재 브랜치로 MayMust 형식의 PR을 만들어줘."

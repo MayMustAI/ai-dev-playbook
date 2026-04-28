@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Commit"
+  short_description: "MayMust 팀 컨벤션으로 git 커밋 메시지를 만들고 커밋"
+  default_prompt: "MayMust 방식으로 현재 변경을 커밋해줘."
