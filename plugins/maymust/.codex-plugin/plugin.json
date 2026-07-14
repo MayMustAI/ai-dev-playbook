@@ -1,6 +1,6 @@
 {
   "name": "maymust",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "MayMust 팀 공용 Codex 스킬 — commit · pull-request · merge · worklog · self-review. 팀 컨벤션(한글 본문, Conventional Commits, squash-merge, 5단계 자기 검증 루프, 듀얼 오디언스 PR, 작업당 한 장 Worklog)을 단일 플러그인으로 제공",
   "author": {
     "name": "MayMust",
