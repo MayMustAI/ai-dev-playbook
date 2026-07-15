@@ -21,7 +21,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | --- | --- |
 | [`/maymust:commit`](plugins/maymust/skills/commit/SKILL.md) | 스테이지된 변경을 팀 컨벤션(Conventional Commits · 한글 본문) 으로 커밋. `meaningful` / `wip` 2 모드 |
 | [`/maymust:pull-request`](plugins/maymust/skills/pull-request/SKILL.md) | 듀얼 오디언스(사람 30초 스캔 + AI claim 검증) 구조의 PR 생성. 5단계 루프 대화형 확인 |
-| [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | squash-merge + 게이트(작성자·리뷰·mergeable·CI). Self-verification/Screenshots 스트립한 깨끗한 squash 메시지. 머지 후 dev 동기화·feature 브랜치 정리 |
+| [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | squash-merge + 게이트(작성자·리뷰·mergeable·CI·명사형 제목). `(#PR)` 접미사와 Self-verification/Screenshots 스트립을 강제하고, 머지 후 dev 동기화·feature 브랜치 정리 |
 | [`/maymust:worklog`](plugins/maymust/skills/worklog/SKILL.md) | 작업당 한 장 worklog. `.worklogs/<date>-<branch>.md` 로 feature 브랜치에 커밋 → squash 시 main 에 자연 축적 |
 | [`/maymust:self-review`](plugins/maymust/skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
 
@@ -115,7 +115,7 @@ enabled = true
 codex plugin marketplace upgrade maymust-ai-dev-playbook
 ```
 
-> Claude 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version`, Codex 버전은 `plugins/maymust/.codex-plugin/plugin.json` 의 `version` 에서 관리합니다 (SemVer). 현재: Claude **0.3.0**, Codex **0.3.1**.
+> Claude 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version`, Codex 버전은 `plugins/maymust/.codex-plugin/plugin.json` 의 `version` 에서 관리합니다 (SemVer). 현재: Claude **0.3.1**, Codex **0.3.2**.
 
 ## 개발 — 스킬 수정 시
 

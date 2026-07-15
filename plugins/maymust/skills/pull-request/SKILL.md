@@ -9,7 +9,7 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 
 ## 핵심 원칙
 
-- **PR 제목 = `/commit` 제목 규약 그대로** — 이 PR 이 squash-merge 되면 그 제목이 커밋 메시지가 됨
+- **PR 제목 = `/commit` 제목 규약 그대로** — 최종 squash 제목은 `/maymust:merge`가 명사형으로 정규화하고 현재 PR 번호를 붙임
 - **PR 본문은 짧고 구조 고정** — 깊은 기술 디테일은 각 커밋 본문에, PR 본문은 "게이트 통과 증거" + "리뷰 유도 prompt"
 - **베이스 브랜치 기본 `dev`** (main 머지는 릴리즈 PR 만)
 - **diff 범위 = 브랜치 전체 (`<base>..HEAD`)** — 마지막 커밋·`HEAD~1`·최근 N개만 보고 PR 작성 절대 금지. PR 본문은 브랜치가 base 에서 분기한 뒤의 **모든** 변경을 커버. 5개 커밋이든 50개 커밋이든 전부 읽고 통합 서술한다
@@ -32,7 +32,7 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 ```
 
 - 타입·스코프·언어 규약은 [commit 스킬](../commit/SKILL.md) 참조
-- **`(#N)` 수동 추가 금지** — PR 번호는 GitHub 이 squash-merge 시 자동 첨부
+- **`(#N)` 수동 추가 금지** — PR 제목에는 번호를 넣지 않는다. `/maymust:merge`가 최종 squash 제목에 현재 PR 번호를 붙인다
 - 여러 커밋을 묶은 PR 이면, **대표가 될 제목** 하나를 추출 (보통 가장 큰 feat/fix)
 
 ## 본문 구조 (규모에 따라 차등 적용)

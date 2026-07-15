@@ -30,7 +30,7 @@ description: MayMust 팀 컨벤션으로 git 커밋을 생성. 스테이지된 �
 - **scope**: 도메인 단위 소문자, 하이픈 허용 (`auth`, `tenant`, `notify`, `cache`, `api`, `ui`, `settings`, `health`). 여러 도메인 걸치면 대표 하나만. 적당한 스코프 없으면 생략 가능 (`docs: ...`)
 - **설명**: 한글 본문 + 영문 기술 용어 (`singleflight`, `TTL`, `round-trip`, `backoff` 등)
 - **길이 제한 없음**. 구조 변경이면 핵심을 다 표현해도 됨 (한 줄에 담길 것)
-- **PR 번호 `(#N)` 수동 추가 금지** — GitHub squash-merge 가 자동 첨부
+- **PR 번호 `(#N)` 수동 추가 금지** — 일반 커밋에는 번호를 넣지 않는다. 최종 squash 제목은 `/maymust:merge`가 현재 PR 번호를 붙인다
 - **Co-Authored-By 금지** — 모든 경우에
 
 ## 컨벤션 — 본문 (meaningful 모드만)

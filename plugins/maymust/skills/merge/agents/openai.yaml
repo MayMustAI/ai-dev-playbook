@@ -1,4 +1,4 @@
 interface:
   display_name: "MayMust Merge"
-  short_description: "MayMust 팀 게이트를 확인하고 PR을 squash merge"
-  default_prompt: "현재 PR을 MayMust 방식으로 머지해줘."
+  short_description: "명사형 제목과 팀 게이트를 검증하는 squash merge"
+  default_prompt: "Use $maymust:merge to validate MayMust gates and squash-merge the current PR with a noun-form title."
