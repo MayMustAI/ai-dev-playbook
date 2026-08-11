@@ -12,7 +12,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `.agents/plugins/marketplace.json` | Codex 팀 내부 마켓플레이스 정의 |
 | `plugins/maymust/.claude-plugin/plugin.json` | Claude Code용 `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/.codex-plugin/plugin.json` | Codex용 `maymust` 플러그인 매니페스트 |
-| `plugins/maymust/skills/` | 5개 팀 공용 스킬 (아래 표) |
+| `plugins/maymust/skills/` | 6개 팀 공용 스킬 (아래 표) |
 | `plugins/maymust/hooks/` | Claude/Codex별 팀 가드 훅 (dev·main 직접 커밋 시 사용자 확인) |
 
 ## 스킬 목록
@@ -24,6 +24,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | squash-merge + 게이트(작성자·리뷰·mergeable·CI·명사형 제목). `(#PR)` 접미사와 Self-verification/Screenshots 스트립을 강제하고, 머지 후 dev 동기화·feature 브랜치 정리 |
 | [`/maymust:worklog`](plugins/maymust/skills/worklog/SKILL.md) | 작업당 한 장 worklog. `.worklogs/<date>-<branch>.md` 로 feature 브랜치에 커밋 → squash 시 main 에 자연 축적 |
 | [`/maymust:self-review`](plugins/maymust/skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
+| [`/maymust:codex-review`](plugins/maymust/skills/codex-review/SKILL.md) | self-review 의 자매 스킬. codex(OpenAI, 세션 편향 0)에게 같은 프레임워크로 리뷰받고 블로커·머스트픽스 0 까지 리뷰↔수정 루프. 통과 시 머지 게이트 통과 선언 |
 
 ## 작동 환경
 
@@ -94,8 +95,9 @@ enabled = true
 2. /maymust:worklog finish     ← 작업 종료, PR 본문 요약 생성
 3. /maymust:self-review        ← (/clear 후 권장) 처음 보는 것처럼 리뷰
 4. /maymust:pull-request       ← 5단계 루프 대화형 확인 후 PR 생성
-5. (동료 리뷰 — 사람)
-6. /maymust:merge              ← 게이트 통과 후 squash merge + 정리
+5. /maymust:codex-review       ← (머지 직전 권장) codex 교차모델 리뷰↔수정 루프, 블로커·머스트픽스 0 까지
+6. (동료 리뷰 — 사람)
+7. /maymust:merge              ← 게이트 통과 후 squash merge + 정리
 ```
 
 ## 업데이트
@@ -115,7 +117,7 @@ enabled = true
 codex plugin marketplace upgrade maymust-ai-dev-playbook
 ```
 
-> Claude 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version`, Codex 버전은 `plugins/maymust/.codex-plugin/plugin.json` 의 `version` 에서 관리합니다 (SemVer). 현재: Claude **0.3.1**, Codex **0.3.2**.
+> Claude 버전은 `.claude-plugin/marketplace.json` 의 `plugins[0].version`, Codex 버전은 `plugins/maymust/.codex-plugin/plugin.json` 의 `version` 에서 관리합니다 (SemVer). 현재: Claude **0.4.0**, Codex **0.4.0**.
 
 ## 개발 — 스킬 수정 시
 
