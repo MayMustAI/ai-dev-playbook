@@ -12,8 +12,9 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `.agents/plugins/marketplace.json` | Codex 마켓플레이스 정의 |
 | `plugins/maymust/.claude-plugin/plugin.json` | Claude Code용 `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/.codex-plugin/plugin.json` | Codex용 `maymust` 플러그인 매니페스트 |
-| `plugins/maymust/skills/` | 7개 팀 공용 스킬 (아래 표) |
-| `plugins/maymust/hooks/` | Claude/Codex별 팀 가드 훅 (dev·main 직접 커밋 시 사용자 확인) |
+| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 공통 지침 1개 + 외부 스킬 6개 |
+| `plugins/maymust/hooks/` | 세션 시작 공통 지침 주입 및 Claude/Codex별 보호 브랜치 가드 |
+| `plugins/maymust/third-party/` | 외부 스킬의 고정 commit·파일 hash·원본 라이선스 |
 | `plugins/independent-review/` | 범용 독립 리뷰 플러그인 (`claude-review`, `loop-review`) |
 | `plugins/resource-status-sheets/` | DailyUpdates CSV 기반 월별 리소스 현황표 플러그인 |
 
@@ -28,6 +29,40 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:self-review`](plugins/maymust/skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
 | [`/maymust:codex-review`](plugins/maymust/skills/codex-review/SKILL.md) | 새 읽기 전용 Codex 세션의 리뷰·최소 수정·재리뷰 루프. PR 통과 시 실제 리뷰한 head SHA에 연결된 마커 생성 |
 | [`/maymust:merge-loop-review-gate`](plugins/maymust/skills/merge-loop-review-gate/SKILL.md) | 머지 전 현재 PR head의 독립 리뷰 통과 마커를 확인. 누락·오래된 마커는 머지 차단 |
+
+## 설치 시 공통 작업 지침
+
+`maymust` 0.6.0은 아래 스킬을 함께 배포합니다. SessionStart 훅이
+[`team-defaults`](plugins/maymust/skills/team-defaults/SKILL.md)의 짧은 공통 지침과
+설치된 원본 스킬 경로를 새 세션·재개·초기화·압축 후 컨텍스트에 전달합니다.
+전체 원문은 필요한 단계에서 읽으며, 모든 스킬을 매 턴에 넣지 않습니다.
+
+| 출처 / 스킬 | 기본 적용 |
+| --- | --- |
+| Superpowers / [`verification-before-completion`](plugins/maymust/skills/verification-before-completion/SKILL.md) | 완료·성공 보고 및 커밋·푸시·PR 전 실제 검증 결과 확인. **Superpowers의 다른 스킬·훅은 포함하지 않음** |
+| Attention Span / [`attention-kind`](plugins/maymust/skills/attention-kind/SKILL.md) | 결과부터 간결하게 답하되 판단에 필요한 수치·조건·한계 유지 |
+| Karpathy / [`karpathy-guidelines`](plugins/maymust/skills/karpathy-guidelines/SKILL.md) | 구현·리뷰·리팩터링 시 가정 명시, 단순한 구현, 최소 변경, 검증 가능한 목표 |
+
+Attention Span의 `spartan`·`rundown`은 사용자가 고르는 대체 응답 스타일,
+`tldr`은 요청한 자료를 요약하는 선택형 스킬입니다. Claude에서는 제공된 native
+output style도 선택할 수 있습니다. 사용자 언어·형식·선택한 스타일을 우선하고,
+특정 진단을 가정하지 않으며, 간결함 때문에 승인된 작업을 덜 수행하지 않습니다.
+
+자동 적용에는 **Python 3, 활성화된 플러그인과 SessionStart 훅**이 필요합니다.
+Codex에서는 설치만으로 훅이 신뢰되지 않습니다. CLI의 `/hooks`에서 해당 플러그인의
+훅을 검토·신뢰한 뒤 새 세션을 시작하세요. 훅 정의가 바뀌면 다시 검토해야 합니다.
+훅을 사용할 수 없는 환경에서는 `maymust:team-defaults`를 명시적으로 호출합니다.
+Claude 설치 후에는 `/reload-plugins`와 새 세션으로 적용을 확인합니다.
+
+같은 플레이북 버전을 설치하면 같은 스킬 원문과 기본 지침을 받습니다.
+이 지침은 모델 행동을 유도하며 실행을 강제로 보장하지 않습니다. CI와 현재 head의
+리뷰·머지 게이트는 별도로 유지합니다. 검증 결과는 마지막 관련 변경 이후의 증거를
+사용하고, 변화 없는 상태 보고마다 같은 검사를 반복하지 않습니다.
+
+외부 원본은 commit SHA에 고정되어 설치 중 최신 `main`을 내려받지 않습니다.
+Attention Span은 **AGPL-3.0**, 두 다른 소스는 MIT를 선언합니다. 원본 라이선스,
+Karpathy 저장소의 별도 LICENSE 파일 부재, 팀 적용 변경점은
+[`THIRD_PARTY_NOTICES.md`](plugins/maymust/THIRD_PARTY_NOTICES.md)에 기록합니다.
 
 ## 공개 Codex 스킬
 
@@ -91,11 +126,12 @@ Codex 앱의 Plugins UI에서 이 레포를 로컬 마켓플레이스로 추가�
 
 ```bash
 codex plugin marketplace add /path/to/ai-dev-playbook
+codex plugin add maymust@maymust-ai-dev-playbook
 ```
 
 그 뒤 필요한 플러그인만 활성화합니다.
 
-- `maymust`: MayMust 팀 컨벤션
+- `maymust`: MayMust 팀 컨벤션과 공통 작업 지침 (세션 훅은 별도 검토·신뢰)
 - `independent-review`: 범용 독립 코드 리뷰
 - `resource-status-sheets`: 범용 월별 리소스 현황표
 
@@ -150,7 +186,7 @@ codex plugin marketplace upgrade maymust-ai-dev-playbook
 codex plugin add maymust@maymust-ai-dev-playbook
 ```
 
-> Claude용 `maymust` 버전은 `.claude-plugin/marketplace.json`, 각 Codex 플러그인 버전은 해당 `.codex-plugin/plugin.json`에서 SemVer로 관리합니다.
+> `maymust` 버전은 Claude 마켓플레이스와 두 런타임의 plugin.json에서 함께 갱신합니다. 공개 Codex 플러그인 버전은 각각의 `.codex-plugin/plugin.json`에서 SemVer로 관리합니다.
 
 ## 개발 — 스킬 수정 시
 
@@ -173,6 +209,13 @@ python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py <skill-d
 codex plugin list --marketplace maymust-ai-dev-playbook --available --json
 python3 -B -m unittest discover -s plugins/resource-status-sheets/skills/resource-status-sheets/tests -v
 python3 -B -m unittest discover -s plugins/maymust/skills/merge-loop-review-gate/tests -v
+python3 -B -m unittest discover -s plugins/maymust/hooks/tests -v
+claude plugin validate plugins/maymust
 ```
+
+Attention Span 원본의 `disable-model-invocation`은 Claude용 지원 필드이며 그대로
+보존합니다. Codex의 선택형 호출 정책은 각 스킬의 `agents/openai.yaml`에 있습니다.
+`quick_validate.py`가 이 Claude 필드를 허용하지 않는 버전이라면 원본을 수정하지
+말고 Claude 플러그인 검증과 배포 파일 hash·훅 테스트로 함께 확인합니다.
 
 변경은 브랜치 → PR → 리뷰 → **squash merge** (자체 스킬을 써서 도그푸딩).

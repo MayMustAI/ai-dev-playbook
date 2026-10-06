@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "name": "superpowers",
+      "repository": "https://github.com/obra/superpowers",
+      "commit": "8ca22dba9a94f28898bbce59f2537ff4d87c747d",
+      "license": "MIT",
+      "files": [
+        {
+          "upstream_path": "skills/verification-before-completion/SKILL.md",
+          "path": "skills/verification-before-completion/SKILL.md",
+          "sha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3"
+        },
+        {
+          "upstream_path": "LICENSE",
+          "path": "third-party/superpowers/LICENSE",
+          "sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400"
+        }
+      ]
+    },
+    {
+      "name": "attention-span",
+      "repository": "https://github.com/alexgreensh/attention-span",
+      "commit": "2714c965e6be1fa2597510e66651e63bc67cb448",
+      "license": "AGPL-3.0",
+      "files": [
+        {
+          "upstream_path": "skills/attention-kind/SKILL.md",
+          "path": "skills/attention-kind/SKILL.md",
+          "sha256": "9072839457ec1186ad4f7b09a7979791432f772aef516b9682be55e6b4abb868"
+        },
+        {
+          "upstream_path": "skills/spartan/SKILL.md",
+          "path": "skills/spartan/SKILL.md",
+          "sha256": "a8fe912415ddff7c0e851fb4994e0d4bc068e829c6a0a16d8c89e0b2ae4f123f"
+        },
+        {
+          "upstream_path": "skills/rundown/SKILL.md",
+          "path": "skills/rundown/SKILL.md",
+          "sha256": "1b9868923995b2c2469c8184e17eddd85f9232546f17db86c169f5db5231efad"
+        },
+        {
+          "upstream_path": "skills/tldr/SKILL.md",
+          "path": "skills/tldr/SKILL.md",
+          "sha256": "1b2513bd32a6914e6129e1ebbf5ae5e0eb2e304108b3cac24fb6555bb8159ea2"
+        },
+        {
+          "upstream_path": "output-styles/attention-kind.md",
+          "path": "output-styles/attention-kind.md",
+          "sha256": "a9da2666c64da03b28a7c1b3de8d991dda7c4b1d9e38da99dff46c009e81d8b1"
+        },
+        {
+          "upstream_path": "output-styles/spartan.md",
+          "path": "output-styles/spartan.md",
+          "sha256": "5a8a77bb9cfbdcb4fc4c8802e6c4e525879d0125c91a59d48f2da85e55c296da"
+        },
+        {
+          "upstream_path": "output-styles/rundown.md",
+          "path": "output-styles/rundown.md",
+          "sha256": "a39a800e9362ff6182c837c935b5fa2277cf4206d95701ddb109090000d59fb2"
+        },
+        {
+          "upstream_path": "LICENSE",
+          "path": "third-party/attention-span/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ]
+    },
+    {
+      "name": "karpathy-guidelines",
+      "repository": "https://github.com/multica-ai/andrej-karpathy-skills",
+      "commit": "2c606141936f1eeef17fa3043a72095b4765b9c2",
+      "license": "MIT",
+      "files": [
+        {
+          "upstream_path": "skills/karpathy-guidelines/SKILL.md",
+          "path": "skills/karpathy-guidelines/SKILL.md",
+          "sha256": "6e22cc54cb02a5e98ae42d06d9d7292db0c1b43894831b32879beb0166b2aea7"
+        }
+      ]
+    }
+  ]
+}

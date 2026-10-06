@@ -1,4 +1,11 @@
 {
   "name": "maymust",
-  "description": "MayMust 팀 공용 Claude Code 스킬 — 팀 커밋·PR·worklog·읽기 전용 독립 리뷰·현재 PR head의 머지 게이트"
+  "version": "0.6.0",
+  "author": {
+    "name": "MayMust",
+    "url": "https://github.com/MayMustAI"
+  },
+  "description": "MayMust 팀 공용 작업 지침과 커밋·PR·worklog·독립 리뷰·현재 PR head의 머지 게이트",
+  "license": "MIT AND AGPL-3.0",
+  "outputStyles": "./output-styles/"
 }
