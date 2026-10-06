@@ -1,0 +1,39 @@
+{
+  "name": "independent-review",
+  "version": "1.0.0",
+  "description": "Independent Claude and Codex review loops for GitHub pull requests and local code changes.",
+  "author": {
+    "name": "MayMust",
+    "url": "https://github.com/MayMustAI"
+  },
+  "homepage": "https://github.com/MayMustAI/ai-dev-playbook",
+  "repository": "https://github.com/MayMustAI/ai-dev-playbook",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude",
+    "code-review",
+    "pull-request",
+    "review-loop"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Independent Review",
+    "shortDescription": "Cross-session code review and fix loops",
+    "longDescription": "Run a read-only Claude or fresh Codex reviewer against a verified Git diff, validate findings locally, and converge on zero blocker and must-fix findings without broadening the change.",
+    "developerName": "MayMust",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/MayMustAI/ai-dev-playbook",
+    "defaultPrompt": [
+      "Run $loop-review on the current branch.",
+      "Use $claude-review to independently review this PR."
+    ],
+    "brandColor": "#4F46E5",
+    "screenshots": []
+  }
+}

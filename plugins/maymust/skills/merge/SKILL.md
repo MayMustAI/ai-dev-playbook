@@ -18,11 +18,12 @@ description: 'MayMust 팀 컨벤션으로 Pull Request를 squash-merge. 게이�
 
 | # | 체크 | 실패 시 |
 | --- | --- | --- |
+| 0 | 현재 PR head의 독립 리뷰 통과 마커 | **하드 블록** — [merge-loop-review-gate](../merge-loop-review-gate/SKILL.md)로 검증; 없으면 전체 PR 리뷰 루프 수행 |
 | 1 | PR 존재 · OPEN · 드래프트 아님 | **하드 블록** — "PR 이 없거나 드래프트입니다" |
 | 2 | PR author == `gh auth status` 로그인 사용자 | **경고 + 확인** — 타인 PR 머지 방지 소프트 가드. "계속하시겠어요?" |
 | 3 | `mergeable == MERGEABLE` (conflict 없음) | **하드 블록** — "conflict 해소 후 재시도" |
 | 4 | `reviewDecision == APPROVED` | **경고 + 확인** — 리뷰 없이 머지할 수 있으나 확인 요함 |
-| 5 | 모든 statusChecks == SUCCESS | **하드 블록 (실패 시)** / **경고 (pending 시)** |
+| 5 | CI check가 모두 완료되고 성공·허용된 SKIPPED/NEUTRAL 상태 | 실패·pending은 **하드 블록**. 검사가 없으면 그 사실을 보고하고 저장소 규칙 확인 |
 | 6 | base == `dev` | `main` 이면 **경고** — "릴리즈 머지가 맞나요?" |
 | 7 | 최종 squash 제목이 명사형 + 현재 PR 번호 규칙 충족 | **하드 블록** — 제목을 정규화한 뒤 다시 검증 |
 
@@ -101,7 +102,7 @@ printf '%s\n' "$SQUASH_TITLE" | rg -q \
 1. **PR 식별**
    - 인자 있으면 그 번호, 없으면 현재 브랜치의 PR 자동 탐색
    - `gh pr view <N> --json number,title,body,state,isDraft,author,reviewDecision,mergeable,mergeStateStatus,statusCheckRollup,baseRefName,headRefOid`
-2. **메타데이터 게이트 체크** — 1~6번. 소프트 경고는 사용자 확인, 하드 블록은 즉시 종료
+2. **독립 리뷰와 메타데이터 게이트 체크** — 먼저 게이트 0, 이후 1~6번. review marker는 PR comment에서 같은 head SHA로 검증한다. 소프트 경고는 기존 사용자 승인 범위를 확인하고, 승인이 없을 때만 확인한다. 하드 블록은 해결 전 머지 금지
 3. **squash 메시지 빌드**
    - 제목 = PR의 Conventional Commit prefix + 명사형 요약 + `(#<현재 PR 번호>)`
    - PR 제목에 번호 토큰이 하나 이상 있으면 모두 제거한 뒤 현재 PR 번호를 한 번만 추가
@@ -109,7 +110,7 @@ printf '%s\n' "$SQUASH_TITLE" | rg -q \
 4. **제목 게이트 체크** — 7번
    - `PREVIEWED_SQUASH_TITLE="$SQUASH_TITLE"`, `PREVIEWED_BODY="$STRIPPED_BODY"`, `PREVIEWED_HEAD_SHA="$HEAD_SHA"`로 승인 대상을 고정
    - 고정한 제목과 본문, `명사형 끝말=<마지막 동작 명사>` 판정을 미리보기 → 사용자 승인
-   - 승인 후 제목·본문 또는 PR head가 달라지면 승인 무효. 3번부터 다시 빌드·검증·미리보기
+   - 승인 후 제목·본문 또는 PR head가 달라지면 승인 무효. 2번부터 독립 리뷰·CI와 메시지 전체를 다시 검증·미리보기
    - 승인 직후 아래처럼 승인된 스냅샷을 직접 대입하고 이후 재작성 금지
      ```bash
      readonly APPROVED_SQUASH_TITLE="$PREVIEWED_SQUASH_TITLE"
@@ -117,6 +118,7 @@ printf '%s\n' "$SQUASH_TITLE" | rg -q \
      readonly APPROVED_HEAD_SHA="$PREVIEWED_HEAD_SHA"
      ```
 5. **머지 실행**
+   - 실행 직전 게이트 0~7을 다시 확인한다. head가 `APPROVED_HEAD_SHA`와 다르면 새 head의 리뷰부터 다시 진행
    ```bash
    gh pr merge <N> --squash --delete-branch --match-head-commit "$APPROVED_HEAD_SHA" \
      --subject "$APPROVED_SQUASH_TITLE" --body "$APPROVED_BODY"
@@ -124,11 +126,11 @@ printf '%s\n' "$SQUASH_TITLE" | rg -q \
    - `--delete-branch` 로 원격 feature 브랜치 삭제
 6. **로컬 정리**
    ```bash
-   git switch dev
+   git switch <verified-base-branch>
    git pull --ff-only
-   git branch -d <old-feature-branch> 2>/dev/null || true
+   git branch -d <old-feature-branch>
    ```
-   - 로컬 feature 브랜치 safe-delete (-D 금지)
+   - 확인된 base(`dev` 또는 승인된 릴리즈 base)를 동기화한다. 로컬 feature 브랜치는 safe-delete한다. squash 이후 Git이 삭제를 거부하면 남은 브랜치를 보고하고 보존한다
 7. **결과 보고**
    - squash commit 해시, 머지된 PR URL, 현재 브랜치 상태
 
@@ -151,6 +153,7 @@ printf '%s\n' "$SQUASH_TITLE" | rg -q \
 PR #42 머지 준비 · feat(plugin): squash 제목 컨벤션 강제 (#42)
 
 게이트 체크:
+✅ 현재 head의 독립 리뷰 통과 마커
 ✅ OPEN · non-draft
 ✅ author 일치 (maymust-jonghyunlee)
 ✅ APPROVED (리뷰어 2명)

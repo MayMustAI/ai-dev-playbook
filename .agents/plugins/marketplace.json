@@ -15,6 +15,30 @@
         "authentication": "ON_INSTALL"
       },
       "category": "Coding"
+    },
+    {
+      "name": "independent-review",
+      "source": {
+        "source": "local",
+        "path": "./plugins/independent-review"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    },
+    {
+      "name": "resource-status-sheets",
+      "source": {
+        "source": "local",
+        "path": "./plugins/resource-status-sheets"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
     }
   ]
 }

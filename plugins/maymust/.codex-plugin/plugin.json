@@ -1,7 +1,7 @@
 {
   "name": "maymust",
-  "version": "0.4.0",
-  "description": "MayMust 팀 공용 Codex 스킬 — commit · pull-request · merge · worklog · self-review · codex-review. 팀 컨벤션(한글 본문, Conventional Commits, squash-merge, 5단계 자기 검증 루프, 듀얼 오디언스 PR, 작업당 한 장 Worklog, codex 교차모델 리뷰 루프)을 단일 플러그인으로 제공",
+  "version": "0.5.0",
+  "description": "MayMust 팀 공용 Codex 스킬 — commit · pull-request · merge · worklog · self-review · codex-review · merge-loop-review-gate. 현재 PR head의 독립 리뷰와 팀 커밋·squash 컨벤션을 검증",
   "author": {
     "name": "MayMust",
     "url": "https://github.com/MayMustAI"
@@ -23,7 +23,7 @@
   "interface": {
     "displayName": "MayMust AI Dev Playbook",
     "shortDescription": "MayMust 팀 개발 컨벤션을 Codex 스킬로 실행",
-    "longDescription": "MayMust 팀의 커밋, PR 작성, squash merge, 셀프 리뷰, 작업 로그 컨벤션을 Codex에서 재사용 가능한 스킬로 제공합니다. Claude Code 플러그인과 같은 skills 디렉터리를 공유하되 Codex 전용 매니페스트와 훅 설정을 따로 둡니다.",
+    "longDescription": "팀 커밋, PR, 작업 로그, 읽기 전용 독립 리뷰와 현재 PR head에 연결된 머지 게이트를 제공합니다. Claude Code와 Codex가 같은 skills 디렉터리를 공유합니다.",
     "developerName": "MayMust",
     "category": "Coding",
     "capabilities": [
