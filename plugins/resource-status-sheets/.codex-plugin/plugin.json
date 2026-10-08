@@ -1,0 +1,38 @@
+{
+  "name": "resource-status-sheets",
+  "version": "1.0.0",
+  "description": "Generate per-person monthly Google Sheets resource reports from DailyUpdates CSV exports.",
+  "author": {
+    "name": "MayMust",
+    "url": "https://github.com/MayMustAI"
+  },
+  "homepage": "https://github.com/MayMustAI/ai-dev-playbook",
+  "repository": "https://github.com/MayMustAI/ai-dev-playbook",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "google-sheets",
+    "daily-updates",
+    "resource-planning",
+    "timesheet"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Resource Status Sheets",
+    "shortDescription": "Monthly resource sheets from DailyUpdates CSV",
+    "longDescription": "Duplicate a user-provided native Google Sheets template, build deterministic per-person monthly row plans from DailyUpdates CSV, and preserve formulas and formatting while handling business-day shifts, leave, holidays, and half days.",
+    "developerName": "MayMust",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/MayMustAI/ai-dev-playbook",
+    "defaultPrompt": [
+      "Use $resource-status-sheets to create this month's team resource sheets."
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

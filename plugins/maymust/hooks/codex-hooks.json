@@ -1,5 +1,5 @@
 {
-  "description": "MayMust 팀 가드 — Codex에서 dev · main에 직접 git commit 시 사용자 확인 요청",
+  "description": "MayMust 공통 작업 지침 및 보호 브랜치 가드",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +7,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"./hooks/branch-guard.sh\""
+            "command": "bash \"${PLUGIN_ROOT}/hooks/branch-guard.sh\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${PLUGIN_ROOT}/hooks/session-start.py\"",
+            "timeout": 5
           }
         ]
       }

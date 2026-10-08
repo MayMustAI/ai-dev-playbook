@@ -1,4 +1,4 @@
 interface:
   display_name: "MayMust Codex Review"
-  short_description: "codex 교차모델 리뷰↔수정 루프로 블로커·머스트픽스 0 까지 수렴"
-  default_prompt: "현재 변경을 codex 리뷰 루프로 검증해줘."
+  short_description: "읽기 전용 Codex 리뷰와 최소 수정으로 현재 PR head 검증"
+  default_prompt: "Use $maymust:codex-review to review the current change and resolve proven blocker and must-fix findings."

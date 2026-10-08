@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Merge Review Gate"
+  short_description: "머지 전에 현재 PR head의 독립 리뷰 통과 마커 확인"
+  default_prompt: "Use $maymust:merge-loop-review-gate to check the independent review marker before merging this PR."
