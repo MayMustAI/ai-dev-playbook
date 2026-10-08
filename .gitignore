@@ -13,6 +13,8 @@
 # Logs / tmp
 *.log
 tmp/
+__pycache__/
+*.pyc
 
 # .worklogs/ 는 의도적으로 추적한다 (플러그인 규약).
 # feature 브랜치에 작업당 한 장 기록 → squash merge 시 main 에 자연 축적.

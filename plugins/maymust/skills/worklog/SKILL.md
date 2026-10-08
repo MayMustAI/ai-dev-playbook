@@ -69,7 +69,7 @@ status: in-progress
 
 1. `/maymust:worklog` 호출
 2. 현재 브랜치 · 프로젝트 루트 확인
-3. `.worklogs/<slug>.md` 존재 여부 체크
+3. `.worklogs/*-<branch-slug>.md` 후보를 찾고 frontmatter `branch`로 현재 브랜치와의 일치를 확인한다. 진행 중인 파일을 우선하며 후보가 여러 개면 대상 작업을 확인한다
 4. 없으면: task 한 줄 입력 받고 템플릿 생성, `## 무엇 / 왜` 섹션 함께 채움
 5. 있으면: 기존 내용 보여주고 이어서 작업
 

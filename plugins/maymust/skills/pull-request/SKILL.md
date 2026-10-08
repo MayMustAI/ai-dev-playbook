@@ -123,8 +123,9 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 1. **브랜치 · 푸시 상태 확인**
    - `git rev-parse --abbrev-ref HEAD` — 현 브랜치
    - `git status` — uncommitted 있으면 커밋 먼저 유도
-   - `git rev-list @{u}..HEAD 2>/dev/null` — 미푸시 커밋 있으면 `git push -u origin <branch>`
+   - upstream 존재를 먼저 확인한다. upstream이 없으면 저장소와 브랜치를 검증한 원격에 `git push -u <head-remote> HEAD:<branch>`로 최초 push한다. upstream이 있으면 `git rev-list @{u}..HEAD`로 미푸시 커밋을 확인한다. 명령 실패를 미푸시 커밋 없음으로 취급하지 않는다
 2. **베이스 브랜치 결정** — 기본 `dev`. 사용자가 명시하면 변경
+   - 확인된 원격의 base ref를 fetch하고 그 ref로 전체 log/diff를 읽는다. 로컬 base가 오래됐으면 그대로 비교하지 않는다
 3. **브랜치 전체 변경 파악** (필수)
    - `git log <base>..HEAD --oneline` — 브랜치에 쌓인 모든 커밋 파악
    - `git diff --stat <base>...HEAD` — 파일 수·LOC·모듈 범위 (규모 결정: 소형/중형/대형)
@@ -244,7 +245,7 @@ process liveness 관점에서 /healthz 는 tenant 무관해야 함. per-tenant
 - [x] 2. 셀프 리뷰 — 리뷰에서 3개 P0/P1 발견·수정 (별도 커밋)
 - [x] 3. LLM 리뷰 — codex · round-trip + 런타임 격리 + 캐시 격리 블로커 지적
 - [x] 4. 피드백 선별 — 3개 전부 수용
-- [x] 5. Playwright — 미작성, 이후 PR 에서 추가. 현재는 수동 시나리오로 대체
+- [ ] 5. Playwright — 미작성, 이후 PR 에서 추가. 수동 검증 증거는 1번에 기록
 
 ## Worklog
 총 3일. day1: tenant runtime · day2: 알림 채널 · day3: 리뷰 반영 + 가드 확장.

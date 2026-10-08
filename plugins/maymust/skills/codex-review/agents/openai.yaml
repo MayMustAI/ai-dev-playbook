@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Codex Review"
+  short_description: "읽기 전용 Codex 리뷰와 최소 수정으로 현재 PR head 검증"
+  default_prompt: "Use $maymust:codex-review to review the current change and resolve proven blocker and must-fix findings."

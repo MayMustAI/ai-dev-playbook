@@ -1,0 +1,6 @@
+interface:
+  display_name: "Resource Status Sheets"
+  short_description: "Create monthly team resource sheets from CSV"
+  default_prompt: "Use $resource-status-sheets to create monthly resource sheets from my DailyUpdates CSV and Google Sheets template."
+policy:
+  allow_implicit_invocation: true
