@@ -24,15 +24,15 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | --- | --- |
 | [`/maymust:commit`](plugins/maymust/skills/commit/SKILL.md) | 스테이지된 변경을 팀 컨벤션(Conventional Commits · 한글 본문) 으로 커밋. `meaningful` / `wip` 2 모드 |
 | [`/maymust:pull-request`](plugins/maymust/skills/pull-request/SKILL.md) | 듀얼 오디언스(사람 30초 스캔 + AI claim 검증) 구조의 PR 생성. 5단계 루프 대화형 확인 |
-| [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | squash-merge + 게이트(작성자·리뷰·mergeable·CI·명사형 제목). `(#PR)` 접미사와 Self-verification/Screenshots 스트립을 강제하고, 머지 후 dev 동기화·feature 브랜치 정리 |
+| [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | 작업 PR은 squash, 장기 브랜치끼리 합치는 통합 PR은 merge commit으로 판정해 머지 + 게이트(작성자·리뷰·mergeable·CI·명사형 제목). `(#PR)` 접미사와 Self-verification/Screenshots 스트립을 강제하고, 머지 후 base 동기화·작업 브랜치 정리(장기 브랜치는 보존) |
 | [`/maymust:worklog`](plugins/maymust/skills/worklog/SKILL.md) | 작업당 한 장 worklog. `.worklogs/<date>-<branch>.md` 로 feature 브랜치에 커밋 → squash 시 main 에 자연 축적 |
 | [`/maymust:self-review`](plugins/maymust/skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
 | [`/maymust:codex-review`](plugins/maymust/skills/codex-review/SKILL.md) | 새 읽기 전용 Codex 세션의 리뷰·최소 수정·재리뷰 루프. PR 통과 시 실제 리뷰한 head SHA에 연결된 마커 생성 |
-| [`/maymust:merge-loop-review-gate`](plugins/maymust/skills/merge-loop-review-gate/SKILL.md) | 머지 전 현재 PR head의 독립 리뷰 통과 마커를 확인. 누락·오래된 마커는 머지 차단 |
+| [`/maymust:merge-loop-review-gate`](plugins/maymust/skills/merge-loop-review-gate/SKILL.md) | 머지 전 현재 PR head의 독립 리뷰 통과 마커를 확인. 누락·오래된 마커는 머지 차단. 이미 리뷰된 커밋만 담긴 통합 PR은 사용자 승인으로 면제 |
 
 ## 설치 시 공통 작업 지침
 
-`maymust` 0.6.0은 아래 스킬을 함께 배포합니다. SessionStart 훅이
+`maymust` 0.7.0은 아래 스킬을 함께 배포합니다. SessionStart 훅이
 [`team-defaults`](plugins/maymust/skills/team-defaults/SKILL.md)의 짧은 공통 지침과
 설치된 원본 스킬 경로를 새 세션·재개·초기화·압축 후 컨텍스트에 전달합니다.
 전체 원문은 필요한 단계에서 읽으며, 모든 스킬을 매 턴에 넣지 않습니다.
@@ -165,7 +165,7 @@ enabled = true
 4. /maymust:self-review        ← (/clear 후 권장) PR의 의도와 구현 리뷰
 5. /maymust:codex-review <PR>  ← 독립 리뷰·수정 루프, 현재 head에 통과 마커 생성
 6. (동료 리뷰 — 사람)
-7. /maymust:merge              ← 현재 head 리뷰 마커 + 팀 게이트 확인 후 squash merge + 정리
+7. /maymust:merge              ← 현재 head 리뷰 마커 + 팀 게이트 확인 후 squash(통합 PR은 merge commit) + 정리
 ```
 
 ## 업데이트
