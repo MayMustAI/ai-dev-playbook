@@ -1,6 +1,6 @@
 {
   "name": "maymust",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "MayMust 팀 공용 작업 지침과 commit · PR · merge · worklog · 독립 리뷰. Attention Span, Karpathy Guidelines, 완료 전 검증을 함께 배포",
   "author": {
     "name": "MayMust",
