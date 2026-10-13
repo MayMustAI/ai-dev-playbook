@@ -18,6 +18,7 @@ status: complete
 - 임시 Git 저장소 기반 단위 테스트 11개 추가(기존 6개 포함 17개 통과)
 - platform-core 실제 이력 대조: release→main = merge·needs-ack(4커밋), #1067 머지 전 상태 재현 = sync-merge·blocked(충돌 해결 merge commit)
 - merge·merge-loop-review-gate 스킬 문서, README, 관련 스킬 문구 갱신, maymust 0.7.0
+- codex R1(must-fix 2): base 의 merge queue, 장기 브랜치 head 를 지우는 자동 삭제 설정을 판정 스크립트가 막도록 수정(테스트 20개)
 
 ## 결정 노트
 

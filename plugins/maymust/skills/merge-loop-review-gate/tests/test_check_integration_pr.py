@@ -167,5 +167,29 @@ class MergedPrCommitsTests(unittest.TestCase):
         self.assertIn("name=repo", calls[0])
 
 
+class RepositoryBlockersTests(unittest.TestCase):
+    def blockers(self, head_long_lived, delete_on_merge=False, queue=None):
+        calls = []
+
+        def runner(args):
+            calls.append(args)
+            repo = {"deleteBranchOnMerge": delete_on_merge, "mergeQueue": queue}
+            return mock.Mock(stdout=json.dumps({"data": {"repository": repo}}))
+
+        result = MODULE.repository_blockers("org/repo", "main", head_long_lived, runner=runner)
+        self.assertIn("base=main", calls[0])
+        return result
+
+    def test_default_settings_allow_integration(self):
+        self.assertEqual(self.blockers(head_long_lived=True), [])
+
+    def test_merge_queue_on_base_blocks(self):
+        self.assertEqual(len(self.blockers(head_long_lived=False, queue={"id": "q"})), 1)
+
+    def test_auto_delete_blocks_only_long_lived_head(self):
+        self.assertEqual(len(self.blockers(head_long_lived=True, delete_on_merge=True)), 1)
+        self.assertEqual(self.blockers(head_long_lived=False, delete_on_merge=True), [])
+
+
 if __name__ == "__main__":
     unittest.main()

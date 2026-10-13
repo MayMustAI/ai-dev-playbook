@@ -121,6 +121,26 @@ def merged_pr_commits(slug, shas, runner=run):
     return merged
 
 
+def repository_blockers(slug, base, head_long_lived, runner=run):
+    """Repository settings that would defeat a merge-commit integration."""
+    owner, name = slug.split("/", 1)
+    query = (
+        "query($owner: String!, $name: String!, $base: String!) { "
+        "repository(owner: $owner, name: $name) { deleteBranchOnMerge "
+        "mergeQueue(branch: $base) { id } } }"
+    )
+    out = runner(["gh", "api", "graphql", "-f", f"query={query}",
+                  "-f", f"owner={owner}", "-f", f"name={name}", "-f", f"base={base}"])
+    repo = json.loads(out.stdout)["data"]["repository"]
+    blockers = []
+    if repo["mergeQueue"] is not None:
+        blockers.append(f"{base} uses a merge queue, so a merge commit is not guaranteed")
+    if head_long_lived and repo["deleteBranchOnMerge"]:
+        blockers.append("the repository auto-deletes merged head branches, "
+                        "so the long-lived head would be deleted")
+    return blockers
+
+
 def fetch_branches(repo, remote, names):
     refspecs = [f"+refs/heads/{n}:refs/remotes/{remote}/{n}" for n in sorted(names)]
     git(repo, "fetch", "--quiet", "--no-tags", remote, *refspecs)
@@ -161,6 +181,9 @@ def check(pr_number, repo, remote, patterns):
 
     slug = run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
                cwd=repo).stdout.strip()
+    blockers = repository_blockers(slug, pr["baseRefName"], result["head_long_lived"])
+    if blockers:
+        raise CheckError("; ".join(blockers))
     shas = git(repo, "rev-list", f"{base_ref}..{head_ref}").stdout.split()
     result["waiver"] = evaluate_waiver(repo, base_ref, head_ref, merged_pr_commits(slug, shas))
     return result
