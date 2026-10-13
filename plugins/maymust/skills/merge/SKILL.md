@@ -35,7 +35,12 @@ python3 <merge-loop-review-gate-dir>/scripts/check_integration_pr.py --pr <N> > 
 - 미리보기에 `머지 방식=<squash|merge commit> (근거=<reason>)`을 표시하고 사용자 승인 대상에 포함한다.
 - 사용자가 판정과 다른 방식을 명시적으로 요구하면, 판정 근거와 다른 방식을 썼을 때의 영향을 알리고 다시 확인받는다. `--rebase`는 어떤 경우에도 쓰지 않는다.
 - 스크립트가 실패하면(조회 오류, Git 2.38 미만 등) 브랜치 이름으로 추측하지 말고 하드 블록한다.
-- 통합 PR이면 스크립트가 저장소 설정도 확인한다. base에 merge queue가 있거나(merge commit을 보장할 수 없음), 저장소가 머지된 head 브랜치를 자동 삭제하는데 head가 장기 브랜치이면 실패한다. 이 경우 사유를 보고하고, 설정 변경이나 수동 머지는 사용자가 결정하게 한다.
+- 통합 PR이면 저장소 설정도 확인한다. base에 merge queue가 있으면 큐 설정에 따라 squash될 수 있고, "Automatically delete head branches"가 켜져 있으면 장기 브랜치 head가 머지 후 삭제될 수 있다. 둘 중 하나라도 해당하면 머지하지 말고 보고한다. 설정 변경이나 수동 머지는 사용자가 결정한다:
+
+  ```bash
+  gh api graphql -f query='query($o: String!, $n: String!, $b: String!) { repository(owner: $o, name: $n) { deleteBranchOnMerge mergeQueue(branch: $b) { id } } }' \
+    -f o=<owner> -f n=<repo> -f b=<base>
+  ```
 
 ## 게이트 (순서대로)
 
@@ -229,9 +234,10 @@ PR #42 머지 준비 · feat(plugin): squash 제목 컨벤션 강제 (#42)
 PR #1080 머지 준비 · chore(release): release/v0.1 변경을 main 에 병합 (#1080)
 
 게이트 체크:
-✅ 통합 PR 리뷰 면제 (needs-ack: PR 없이 들어온 커밋 4개 확인·승인, 면제 기록 comment 작성)
+✅ 통합 PR 리뷰 면제 (eligible, 사용자 승인, 면제 기록 comment 작성)
 ✅ OPEN · non-draft · MERGEABLE · statusChecks 통과
 ✅ 방향: release/v0.1 → main
+✅ 저장소 설정: merge queue 없음 · head 자동 삭제 꺼짐
 
 머지 방식: merge commit (근거=head-long-lived) · release/v0.1 원격·로컬 보존
 

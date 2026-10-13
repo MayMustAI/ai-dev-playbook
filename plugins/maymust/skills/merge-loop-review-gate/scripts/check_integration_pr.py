@@ -9,7 +9,6 @@ import sys
 
 
 DEFAULT_LONG_LIVED = "main,dev,release/*"
-GRAPHQL_BATCH = 80
 
 
 class CheckError(RuntimeError):
@@ -64,86 +63,23 @@ def merge_is_clean(repo, sha, parents):
     return result.stdout.split()[0] == tree
 
 
-def evaluate_waiver(repo, base_ref, head_ref, merged_pr_shas):
-    """Find commits in base..head that no merged PR has already gated."""
-    log = git(repo, "log", "--format=%H%x1f%P%x1f%s", f"{base_ref}..{head_ref}").stdout
-    conflict_merges, unreviewed = [], []
-    count = 0
+def evaluate_waiver(repo, base_ref, head_ref, long_refs):
+    """Block when the PR brings commits no long-lived branch holds yet.
+
+    Commits already on a long-lived branch passed that branch's PR gate. A new
+    commit is allowed only as a merge identical to Git's automatic merge.
+    """
+    excluded = [f"^{ref}" for ref in [base_ref, *long_refs]]
+    log = git(repo, "log", "--format=%H%x1f%P%x1f%s", head_ref, *excluded).stdout
+    blocking = []
     for line in log.splitlines():
         sha, parents, subject = line.split("\x1f", 2)
-        count += 1
-        if sha in merged_pr_shas:
-            continue
         parents = parents.split()
-        entry = {"sha": sha, "subject": subject}
-        if len(parents) > 1:
-            if not merge_is_clean(repo, sha, parents):
-                conflict_merges.append(entry)
-        else:
-            unreviewed.append(entry)
-    if conflict_merges:
-        status = "blocked"
-    elif unreviewed:
-        status = "needs-ack"
-    else:
-        status = "eligible"
-    return {
-        "status": status,
-        "commit_count": count,
-        "conflict_merges": conflict_merges,
-        "unreviewed_commits": unreviewed,
-    }
-
-
-def merged_pr_commits(slug, shas, runner=run):
-    """Return the subset of shas that belong to at least one merged PR."""
-    owner, name = slug.split("/", 1)
-    merged = set()
-    for start in range(0, len(shas), GRAPHQL_BATCH):
-        chunk = shas[start:start + GRAPHQL_BATCH]
-        fields = " ".join(
-            f'c{i}: object(oid: "{sha}") {{ ... on Commit {{ '
-            f"associatedPullRequests(first: 20) {{ nodes {{ merged }} }} }} }}"
-            for i, sha in enumerate(chunk)
-        )
-        query = (
-            "query($owner: String!, $name: String!) { "
-            f"repository(owner: $owner, name: $name) {{ {fields} }} }}"
-        )
-        out = runner(["gh", "api", "graphql", "-f", f"query={query}",
-                      "-f", f"owner={owner}", "-f", f"name={name}"])
-        repo = json.loads(out.stdout)["data"]["repository"]
-        for i, sha in enumerate(chunk):
-            commit = repo.get(f"c{i}") or {}
-            nodes = (commit.get("associatedPullRequests") or {}).get("nodes") or []
-            if any(node.get("merged") for node in nodes):
-                merged.add(sha)
-    return merged
-
-
-def repository_blockers(slug, base, head_long_lived, runner=run):
-    """Repository settings that would defeat a merge-commit integration."""
-    owner, name = slug.split("/", 1)
-    query = (
-        "query($owner: String!, $name: String!, $base: String!) { "
-        "repository(owner: $owner, name: $name) { deleteBranchOnMerge "
-        "mergeQueue(branch: $base) { id } } }"
-    )
-    out = runner(["gh", "api", "graphql", "-f", f"query={query}",
-                  "-f", f"owner={owner}", "-f", f"name={name}", "-f", f"base={base}"])
-    repo = json.loads(out.stdout)["data"]["repository"]
-    blockers = []
-    if repo["mergeQueue"] is not None:
-        blockers.append(f"{base} uses a merge queue, so a merge commit is not guaranteed")
-    if head_long_lived and repo["deleteBranchOnMerge"]:
-        blockers.append("the repository auto-deletes merged head branches, "
-                        "so the long-lived head would be deleted")
-    return blockers
-
-
-def fetch_branches(repo, remote, names):
-    refspecs = [f"+refs/heads/{n}:refs/remotes/{remote}/{n}" for n in sorted(names)]
-    git(repo, "fetch", "--quiet", "--no-tags", remote, *refspecs)
+        if len(parents) > 1 and merge_is_clean(repo, sha, parents):
+            continue
+        kind = "merge-differs-from-auto-merge" if len(parents) > 1 else "new-commit"
+        blocking.append({"sha": sha, "subject": subject, "kind": kind})
+    return {"status": "blocked" if blocking else "eligible", "blocking_commits": blocking}
 
 
 def check(pr_number, repo, remote, patterns):
@@ -164,28 +100,24 @@ def check(pr_number, repo, remote, patterns):
     remote_heads = git(repo, "ls-remote", "--heads", remote).stdout
     names = {line.split("refs/heads/", 1)[1] for line in remote_heads.splitlines()}
     long_lived = {n for n in names if is_long_lived(n, patterns)}
-    fetch_branches(repo, remote, long_lived | {pr["baseRefName"], pr["headRefName"]})
+    fetch = long_lived | {pr["baseRefName"], pr["headRefName"]}
+    git(repo, "fetch", "--quiet", "--no-tags", remote,
+        *[f"+refs/heads/{n}:refs/remotes/{remote}/{n}" for n in sorted(fetch)])
 
     base_ref = f"{remote}/{pr['baseRefName']}"
     head_ref = f"{remote}/{pr['headRefName']}"
     if git(repo, "rev-parse", head_ref).stdout.strip() != pr["headRefOid"]:
         raise CheckError("PR head moved while checking; run again")
-    others = [f"{remote}/{n}" for n in sorted(long_lived) if n != pr["baseRefName"]]
+    long_refs = [f"{remote}/{n}" for n in sorted(long_lived)]
+    others = [ref for ref in long_refs if ref != base_ref]
     mode, reason = classify(repo, base_ref, head_ref, pr["baseRefName"],
                             pr["headRefName"], others, patterns)
     result.update(mode=mode, reason=reason,
                   head_long_lived=is_long_lived(pr["headRefName"], patterns))
-    if mode != "merge":
+    if mode == "merge":
+        result["waiver"] = evaluate_waiver(repo, base_ref, head_ref, long_refs)
+    else:
         result["waiver"] = {"status": "not-applicable"}
-        return result
-
-    slug = run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
-               cwd=repo).stdout.strip()
-    blockers = repository_blockers(slug, pr["baseRefName"], result["head_long_lived"])
-    if blockers:
-        raise CheckError("; ".join(blockers))
-    shas = git(repo, "rev-list", f"{base_ref}..{head_ref}").stdout.split()
-    result["waiver"] = evaluate_waiver(repo, base_ref, head_ref, merged_pr_commits(slug, shas))
     return result
 
 

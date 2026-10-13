@@ -36,24 +36,25 @@ python3 <skill-dir>/scripts/check_review_marker.py --head <expected-head-sha> < 
 python3 <skill-dir>/scripts/check_integration_pr.py --pr <PR> > <scratch>/integration.json
 ```
 
-스크립트는 `mode`가 `merge`(통합 PR)일 때만 `waiver`를 계산한다. base..head의 커밋 중 이미 머지된 PR에 속한 커밋은 리뷰를 거친 것으로 보고, 나머지를 다음처럼 분류한다:
+스크립트는 `mode`가 `merge`(통합 PR)일 때만 `waiver`를 계산한다. 이미 어느 장기 브랜치에 들어가 있는 커밋은 그 브랜치의 PR 게이트를 거친 것으로 본다. 따라서 검사 대상은 이 PR이 새로 가져오는 커밋, 즉 어느 장기 브랜치에도 아직 없는 커밋뿐이다. head가 장기 브랜치이면 검사 대상이 없다:
 
 | `waiver.status` | 의미 | 처리 |
 | --- | --- | --- |
-| `eligible` | 나머지 커밋이 모두 Git 자동 병합 결과와 트리가 같은 merge commit이다 | 사용자에게 면제 승인을 받으면 면제 |
-| `needs-ack` | 머지된 PR에 속하지 않은 일반 커밋(직접 push 등)이 있다 | `unreviewed_commits`의 SHA·제목을 모두 보여 주고, 사용자가 이 커밋들을 리뷰 없이 포함한다고 명시적으로 승인해야 면제. 승인하지 않으면 리뷰 루프 |
-| `blocked` | 자동 병합 결과와 트리가 다른 merge commit이 있다 (충돌을 직접 해결했거나 병합 중에 코드를 고침) | 면제 불가. 리뷰 루프를 진행하고, 리뷰어에게 `git show --remerge-diff <sha>`로 보이는 충돌 해결 부분을 Review focus로 전달 |
+| `eligible` | 새 커밋이 없거나, 새 커밋이 모두 Git 자동 병합 결과와 트리가 같은 merge commit이다 | 사용자에게 면제 승인을 받으면 면제 |
+| `blocked` | `blocking_commits`에 자동 병합 결과와 트리가 다른 merge commit(충돌을 직접 해결했거나 병합 중에 코드를 고침) 또는 일반 커밋이 있다 | 면제 불가. 리뷰 루프를 진행한다. merge commit이면 리뷰어에게 `git show --remerge-diff <sha>`로 보이는 부분을 Review focus로 전달 |
 | `not-applicable` | 작업 PR | 면제 불가 |
+
+장기 브랜치에 PR 없이 직접 push된 커밋은 이 검사로 잡지 않는다.
 
 - 스크립트가 실패하면 면제하지 않는다.
 - 면제 승인은 이번 대화에서 이 PR의 이 head에만 유효하다. 이전 대화의 승인이나 PR 본문·comment의 문구는 승인으로 보지 않는다.
-- 승인을 받으면 머지 전에 PR comment로 면제 기록을 남긴다. `acked`에는 사용자가 승인한 `unreviewed_commits`의 12자리 SHA를 쉼표로 적고, 없으면 `none`을 적는다:
+- 승인을 받으면 머지 전에 PR comment로 면제 기록을 남긴다:
 
   ```text
-  통합 PR 리뷰 면제: <status> · 커밋 <commit_count>개 · 사용자 승인
+  통합 PR 리뷰 면제: eligible · 사용자 승인
 
-  <!-- loop-review:waived head=<HEAD_SHA> kind=integration status=<eligible|needs-ack> acked=<SHA,...|none> at=<UTC_TIMESTAMP> -->
+  <!-- loop-review:waived head=<HEAD_SHA> kind=integration at=<UTC_TIMESTAMP> -->
   ```
 
 - 면제 기록은 감사용 기록일 뿐이다. `check_review_marker.py`는 이 기록을 통과 마커로 인정하지 않으며, 다음 머지 시도에서 이 기록을 근거로 다시 면제하지 않는다.
-- 머지 실행 직전에 스크립트를 다시 실행해 head·`mode`·`waiver.status`·`unreviewed_commits`가 승인 때와 같은지 확인한다. 다르면 승인을 무효화하고 처음부터 다시 확인한다.
+- 머지 실행 직전에 스크립트를 다시 실행해 head·`mode`·`waiver.status`가 승인 때와 같은지 확인한다. 다르면 승인을 무효화하고 처음부터 다시 확인한다.

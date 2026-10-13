@@ -1,5 +1,4 @@
 import importlib.util
-import json
 import os
 from pathlib import Path
 import subprocess
@@ -101,94 +100,60 @@ class ClassifyTests(GitRepoTestCase):
 
 
 class WaiverTests(GitRepoTestCase):
+    def long_refs(self):
+        return [b for b in self.git("branch", "--format=%(refname:short)").split()
+                if MODULE.is_long_lived(b, PATTERNS)]
+
+    def waiver(self, base, head):
+        return MODULE.evaluate_waiver(self.repo, base, head, self.long_refs())
+
     def sync_dev_into_release(self, resolve=None):
         self.git("switch", "-q", "-c", "release/v0.1")
         if resolve:
             self.commit("app.txt", "release\n", "release edit")
         self.git("switch", "-q", "-c", "dev", "main")
-        dev = self.commit("app.txt", "dev\n", "dev edit") if resolve else self.commit(
-            "y.txt", "y\n", "dev work")
+        if resolve:
+            self.commit("app.txt", "dev\n", "dev edit")
+        else:
+            self.commit("y.txt", "y\n", "dev work")
         self.git("switch", "-q", "-c", "chore/sync", "release/v0.1")
-        return dev, self.merge("dev", resolve)
+        return self.merge("dev", resolve)
 
-    def test_clean_sync_of_reviewed_commits_is_eligible(self):
-        dev, _sync = self.sync_dev_into_release()
-        result = MODULE.evaluate_waiver(self.repo, "release/v0.1", "chore/sync", {dev})
-        self.assertEqual(result["status"], "eligible")
-        self.assertEqual(result["commit_count"], 2)
-
-    def test_commits_outside_merged_prs_need_acknowledgement(self):
-        dev, _sync = self.sync_dev_into_release()
-        result = MODULE.evaluate_waiver(self.repo, "release/v0.1", "chore/sync", set())
-        self.assertEqual(result["status"], "needs-ack")
-        self.assertEqual([c["sha"] for c in result["unreviewed_commits"]], [dev])
+    def test_clean_sync_is_eligible(self):
+        self.sync_dev_into_release()
+        self.assertEqual(self.waiver("release/v0.1", "chore/sync"),
+                         {"status": "eligible", "blocking_commits": []})
 
     def test_manual_conflict_resolution_blocks_waiver(self):
-        dev, sync = self.sync_dev_into_release(resolve="release + dev\n")
-        result = MODULE.evaluate_waiver(self.repo, "release/v0.1", "chore/sync", {dev})
+        sync = self.sync_dev_into_release(resolve="release + dev\n")
+        result = self.waiver("release/v0.1", "chore/sync")
         self.assertEqual(result["status"], "blocked")
-        self.assertEqual([c["sha"] for c in result["conflict_merges"]], [sync])
+        self.assertEqual([(c["sha"], c["kind"]) for c in result["blocking_commits"]],
+                         [(sync, "merge-differs-from-auto-merge")])
 
     def test_edit_hidden_in_clean_merge_blocks_waiver(self):
         self.git("branch", "release/v0.1")
         self.git("switch", "-q", "-c", "dev")
-        dev = self.commit("y.txt", "y\n", "dev work")
+        self.commit("y.txt", "y\n", "dev work")
         self.git("switch", "-q", "-c", "chore/sync", "release/v0.1")
         self.git("merge", "--no-ff", "--no-commit", "-q", "dev")
         Path(self.repo, "z.txt").write_text("unreviewed\n")
         self.git("add", "z.txt")
         self.git("commit", "-q", "-m", "merge dev")
-        result = MODULE.evaluate_waiver(self.repo, "release/v0.1", "chore/sync", {dev})
-        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(self.waiver("release/v0.1", "chore/sync")["status"], "blocked")
 
-    def test_merge_already_gated_by_merged_pr_is_not_rechecked(self):
-        dev, sync = self.sync_dev_into_release(resolve="release + dev\n")
-        result = MODULE.evaluate_waiver(self.repo, "release/v0.1", "chore/sync", {dev, sync})
-        self.assertEqual(result["status"], "eligible")
+    def test_new_commit_on_sync_branch_blocks_waiver(self):
+        self.sync_dev_into_release()
+        extra = self.commit("z.txt", "fix\n", "fix after sync")
+        result = self.waiver("release/v0.1", "chore/sync")
+        self.assertEqual([(c["sha"], c["kind"]) for c in result["blocking_commits"]],
+                         [(extra, "new-commit")])
 
-
-class MergedPrCommitsTests(unittest.TestCase):
-    def test_batches_queries_and_keeps_only_merged_associations(self):
-        shas = [f"{i:040x}" for i in range(MODULE.GRAPHQL_BATCH + 1)]
-        calls = []
-
-        def runner(args):
-            calls.append(args)
-            query = args[args.index("-f") + 1]
-            count = query.count("object(oid:")
-            repo = {f"c{i}": {"associatedPullRequests": {"nodes": [{"merged": i == 0}]}}
-                    for i in range(count)}
-            return mock.Mock(stdout=json.dumps({"data": {"repository": repo}}))
-
-        merged = MODULE.merged_pr_commits("org/repo", shas, runner=runner)
-        self.assertEqual(len(calls), 2)
-        self.assertEqual(merged, {shas[0], shas[MODULE.GRAPHQL_BATCH]})
-        self.assertIn("owner=org", calls[0])
-        self.assertIn("name=repo", calls[0])
-
-
-class RepositoryBlockersTests(unittest.TestCase):
-    def blockers(self, head_long_lived, delete_on_merge=False, queue=None):
-        calls = []
-
-        def runner(args):
-            calls.append(args)
-            repo = {"deleteBranchOnMerge": delete_on_merge, "mergeQueue": queue}
-            return mock.Mock(stdout=json.dumps({"data": {"repository": repo}}))
-
-        result = MODULE.repository_blockers("org/repo", "main", head_long_lived, runner=runner)
-        self.assertIn("base=main", calls[0])
-        return result
-
-    def test_default_settings_allow_integration(self):
-        self.assertEqual(self.blockers(head_long_lived=True), [])
-
-    def test_merge_queue_on_base_blocks(self):
-        self.assertEqual(len(self.blockers(head_long_lived=False, queue={"id": "q"})), 1)
-
-    def test_auto_delete_blocks_only_long_lived_head(self):
-        self.assertEqual(len(self.blockers(head_long_lived=True, delete_on_merge=True)), 1)
-        self.assertEqual(self.blockers(head_long_lived=False, delete_on_merge=True), [])
+    def test_commits_already_on_long_lived_head_are_not_rechecked(self):
+        self.sync_dev_into_release(resolve="release + dev\n")
+        self.git("switch", "-q", "release/v0.1")
+        self.git("merge", "-q", "--ff-only", "chore/sync")
+        self.assertEqual(self.waiver("main", "release/v0.1")["status"], "eligible")
 
 
 if __name__ == "__main__":
