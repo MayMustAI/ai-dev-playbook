@@ -49,8 +49,7 @@ def is_license(path):
     return Path(path).name.upper().startswith(("LICENSE", "COPYING"))
 
 
-def check_source(source, plugin, apply):
-    pinned = source["commit"]
+def check_source(source):
     with tempfile.TemporaryDirectory() as workdir:
         checkout, latest = clone_latest(source["repository"], Path(workdir))
         files, updates = [], {}
@@ -72,17 +71,19 @@ def check_source(source, plugin, apply):
     elif any(item["status"] != "same" for item in adapted):
         blocked = "adapted material changed; port it by hand, then update the commit and hashes"
 
-    applied = bool(apply and updates and not blocked)
-    if applied:
-        for entry in source["files"]:
-            if entry["path"] in updates:
-                (plugin / entry["path"]).write_bytes(updates[entry["path"]])
-                entry["sha256"] = sha256(updates[entry["path"]])
-        source["commit"] = latest
+    report = {"name": source["name"], "repository": source["repository"],
+              "pinned_commit": source["commit"], "latest_commit": latest, "files": files,
+              "adapted": adapted, "blocked": blocked, "applied": False}
+    return report, updates
 
-    return {"name": source["name"], "repository": source["repository"], "pinned_commit": pinned,
-            "latest_commit": latest, "files": files, "adapted": adapted,
-            "blocked": blocked, "applied": applied}
+
+def apply_source(source, report, updates, plugin):
+    for entry in source["files"]:
+        if entry["path"] in updates:
+            (plugin / entry["path"]).write_bytes(updates[entry["path"]])
+            entry["sha256"] = sha256(updates[entry["path"]])
+    source["commit"] = report["latest_commit"]
+    report["applied"] = True
 
 
 def main(argv=None):
@@ -94,7 +95,13 @@ def main(argv=None):
 
     lock_path = args.plugin_root / "third-party" / "skills.lock.json"
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    reports = [check_source(source, args.plugin_root, args.apply) for source in lock["sources"]]
+    # Check every source before writing anything, so a failed clone cannot leave
+    # copied files that the lock does not record.
+    results = [check_source(source) for source in lock["sources"]]
+    for source, (report, updates) in zip(lock["sources"], results):
+        if args.apply and updates and not report["blocked"]:
+            apply_source(source, report, updates, args.plugin_root)
+    reports = [report for report, _ in results]
     if any(report["applied"] for report in reports):
         lock_path.write_text(json.dumps(lock, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 

@@ -103,6 +103,18 @@ class CheckUpstreamTests(unittest.TestCase):
         self.assertEqual(lock["files"][0]["sha256"], digest(self.plugin / "skills/x/SKILL.md"))
         self.assertFalse(self.run_check()["changed"])
 
+    def test_failed_clone_of_later_source_writes_nothing(self):
+        self.commit_upstream("v2", writes=[("skills/x/SKILL.md", "v2\n")])
+        lock = json.loads(self.lock_path.read_text())
+        lock["sources"].append({"name": "gone", "repository": (Path(self.tmp.name) / "gone").as_uri(),
+                                "commit": self.first_commit, "license": "MIT", "files": []})
+        self.lock_path.write_text(json.dumps(lock, indent=2) + "\n")
+        before = self.lock_path.read_text()
+        with self.assertRaises(subprocess.CalledProcessError), contextlib.redirect_stdout(io.StringIO()):
+            MODULE.main(["--plugin-root", str(self.plugin), "--apply"])
+        self.assertEqual((self.plugin / "skills/x/SKILL.md").read_text(), "v1\n")
+        self.assertEqual(self.lock_path.read_text(), before)
+
     def test_missing_upstream_path_blocks_apply(self):
         self.commit_upstream("move", writes=[("skills/x/SKILL.md", "v2\n")],
                              moves=[("skills/x/SKILL.md", "plugins/up/skills/x/SKILL.md")])
