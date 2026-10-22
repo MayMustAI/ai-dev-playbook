@@ -236,7 +236,7 @@ Claude에서는 `/maymust:<스킬>`, Codex에서는 `$maymust:<스킬>`로 호�
 - **호출**: `/maymust:codex-review <PR 번호|URL>`, 옵션 `--once`, `--max <n>`, `--uncommitted`, `--base <ref>`, `--commit <sha>`
 - **하는 일**: 새 `codex exec -s read-only` 세션이 리뷰어가 되고, 현재 세션은 검증된 blocker·must-fix만 최소 수정합니다. 기본 최대 5라운드이고, 같은 지적이 반복되면 멈춥니다.
 - **통과**: blocker 0, must-fix 0이면 통과입니다. PR 모드에서는 리뷰한 head SHA에 묶인 `loop-review:pass` 마커를 PR 코멘트로 남깁니다. 이후 새 커밋이 생기면 마커는 무효가 됩니다.
-- **전제**: Codex 로그인, 깨끗한 작업 트리, 보호 브랜치(`main`, `master`, `dev`, `develop`, 원격 기본 브랜치)가 아닐 것, PR 모드에서는 현재 브랜치와 HEAD가 PR head와 같을 것
+- **전제**: Codex 로그인이 필요합니다. 수정을 커밋하는 루프(PR 모드, `--base`, `--commit`, 인자 없이 실행해 브랜치 범위가 선택된 경우)는 깨끗한 작업 트리와 보호 브랜치(`main`, `master`, `dev`, `develop`, 원격 기본 브랜치)가 아닌 작업 브랜치가 필요하고, PR 모드에서는 현재 브랜치와 HEAD가 PR head와 같아야 합니다. 아직 커밋하지 않은 변경은 `--uncommitted`로 리뷰하며(미추적 파일 포함, 수정은 작업 트리에 남김), `--once`는 수정·커밋 없이 한 번만 리뷰합니다.
 - **주의**: `--once`와 PR이 아닌 범위의 통과는 머지 증거가 아닙니다. 자동 머지는 하지 않습니다.
 
 #### `merge-loop-review-gate`
@@ -350,8 +350,8 @@ Chat 탭은 플러그인 스킬을 지원하지 않습니다. Desktop의 Code �
 ### `codex-review`가 시작하지 않는다
 
 - `codex login status`로 로그인 상태를 확인합니다.
-- 작업 트리가 깨끗한지 확인합니다. 미추적 파일도 막는 원인이 됩니다.
-- `dev`·`main` 같은 보호 브랜치가 아닌 작업 브랜치에서 실행합니다.
+- 수정을 커밋하는 루프(PR 모드, `--base`, `--commit`)라면 작업 트리가 깨끗한지 확인합니다. 미추적 파일도 막는 원인이 됩니다. 아직 커밋하지 않은 변경을 리뷰하려면 `--uncommitted`를, 수정 없이 한 번만 리뷰하려면 `--once`를 씁니다.
+- 수정을 커밋하는 루프는 `dev`·`main` 같은 보호 브랜치가 아닌 작업 브랜치에서 실행합니다.
 - PR 모드에서는 현재 브랜치가 PR head 브랜치이고, 로컬 HEAD가 원격 PR head와 같아야 합니다.
 
 ### 머지가 막힌다
