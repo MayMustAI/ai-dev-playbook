@@ -63,6 +63,7 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 ## Design decisions
 - <선택 A (vs 고려한 B)>: <이유> — 리뷰어는 이 이유가 성립하는지 체크
 - 불변식: <지켜야 할 규칙. 예: "cache key 에 regionID 필수">
+- 안전 근거: <변경이 안전한 이유가 되는 사실> (확신 단계: <위치 / 불가능 증명 / 실행 / 재현>) — `/maymust:blast-radius`를 실행한 경우
 
 ## Review focus
 - 🔍 주로 봐주세요: <위험 지점 / 설계 판단 지점 — 파일·함수 단위>
@@ -145,6 +146,8 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
    - 답 없는 단계는 **`[ ]` + "미수행: <이유>"** 로 기록. 절대 `[x]` 로 가짜 통과 처리 금지
 8. **Worklog 링크 물어봄** — 없으면 인라인 3–5줄 요약 유도
 9. **Review focus · Out of scope 확인** — 중대형이면 사용자가 직접 채워야 의미 있음. 스킬이 후보를 diff 에서 추천
+   - 공용 함수·데이터 형식·설정·여러 모듈을 바꾸는 변경이면 PR 생성 전에 `/maymust:blast-radius` 실행을 제안한다. 안전 근거와 확신 단계는 `## Design decisions`에, 확인된 위험은 `## Review focus`에 옮기고, 비공개 정보는 옮기지 않는다
+   - 성능 수치를 본문에 쓰면 `/maymust:benchmark-checklist`로 먼저 검증하고, 대표 수치 하나(단위, 전후, 실행 횟수)만 쓴다
 10. **스크린샷 확인** — UI 변경 감지 시 "Before/After 스크린샷 붙여주세요" 유도. 없으면 `Screenshots` 섹션에 TODO 남김
 11. **최종 본문 프리뷰 → 사용자 승인**
 12. **draft / ready 확인**

@@ -12,7 +12,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `.agents/plugins/marketplace.json` | Codex 마켓플레이스 정의 |
 | `plugins/maymust/.claude-plugin/plugin.json` | Claude Code용 `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/.codex-plugin/plugin.json` | Codex용 `maymust` 플러그인 매니페스트 |
-| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 공통 지침 1개 + 외부 스킬 6개 |
+| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 분석 스킬 4개(pstack에서 이식) + 공통 지침 1개 + 외부 스킬 6개 |
 | `plugins/maymust/hooks/` | 세션 시작 공통 지침 주입 및 Claude/Codex별 보호 브랜치 가드 |
 | `plugins/maymust/third-party/` | 외부 스킬의 고정 commit·파일 hash·원본 라이선스 |
 | `plugins/independent-review/` | 범용 독립 리뷰 플러그인 (`claude-review`, `loop-review`) |
@@ -30,9 +30,22 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:codex-review`](plugins/maymust/skills/codex-review/SKILL.md) | 새 읽기 전용 Codex 세션의 리뷰·최소 수정·재리뷰 루프. PR 통과 시 실제 리뷰한 head SHA에 연결된 마커 생성 |
 | [`/maymust:merge-loop-review-gate`](plugins/maymust/skills/merge-loop-review-gate/SKILL.md) | 머지 전 현재 PR head의 독립 리뷰 통과 마커를 확인. 누락·오래된 마커는 머지 차단. 이미 리뷰된 커밋만 담긴 통합 PR은 사용자 승인으로 면제 |
 
+## 분석 스킬 (pstack에서 이식)
+
+[pstack](https://github.com/cursor/plugins/tree/main/pstack)의 방법론 중 팀 흐름과 충돌하지 않는 부분을 고정 commit 기준으로 옮겨 왔습니다. pstack 자체는 설치하지 않으며, Claude Code와 Codex에서 같은 스킬을 씁니다.
+
+| 호출 | 역할 |
+| --- | --- |
+| [`/maymust:blast-radius`](plugins/maymust/skills/blast-radius/SKILL.md) | 변경이 diff 밖에서 깨뜨릴 수 있는 것을 찾고, 안전 근거가 되는 사실 하나를 실행으로 증명. 결과는 PR의 Design decisions·Review focus로 연결 |
+| [`/maymust:benchmark-checklist`](plugins/maymust/skills/benchmark-checklist/SKILL.md) | 성능 수치를 보고하거나 그 수치로 결정하기 전에 7개 질문(한계 요인·튜닝·물리적 한계·오류·재현성·전체 비중·실제 실행)으로 검증 |
+| [`/maymust:how`](plugins/maymust/skills/how/SKILL.md) | 코드·서브시스템 동작을 관점별로 탐색해 설명. 서브에이전트를 여러 개 띄우므로 명시 호출 전용 |
+| [`/maymust:why`](plugins/maymust/skills/why/SKILL.md) | 코드가 왜 이렇게 만들어졌는지 git·PR·Linear·Notion·Slack 근거를 출처별로 읽기 전용 조사. 확인된 사실과 추론을 구분. 명시 호출 전용 |
+
+같은 출처에서 self-review·codex 리뷰어의 테스트 판정 기준("동작을 깨면 실패하고 내부만 바꾸면 통과하는가")과 worklog의 근거 기록 규칙도 가져왔습니다. pstack의 PR·머지·자율 실행·워크트리 정리 단계는 팀의 PR·리뷰·머지 절차와 충돌하므로 가져오지 않았습니다.
+
 ## 설치 시 공통 작업 지침
 
-`maymust` 0.7.0은 아래 스킬을 함께 배포합니다. SessionStart 훅이
+`maymust` 0.8.0은 아래 스킬을 함께 배포합니다. SessionStart 훅이
 [`team-defaults`](plugins/maymust/skills/team-defaults/SKILL.md)의 짧은 공통 지침과
 설치된 원본 스킬 경로를 새 세션·재개·초기화·압축 후 컨텍스트에 전달합니다.
 전체 원문은 필요한 단계에서 읽으며, 모든 스킬을 매 턴에 넣지 않습니다.
@@ -42,6 +55,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | Superpowers / [`verification-before-completion`](plugins/maymust/skills/verification-before-completion/SKILL.md) | 완료·성공 보고 및 커밋·푸시·PR 전 실제 검증 결과 확인. **Superpowers의 다른 스킬·훅은 포함하지 않음** |
 | Attention Span / [`attention-kind`](plugins/maymust/skills/attention-kind/SKILL.md) | 결과부터 간결하게 답하되 판단에 필요한 수치·조건·한계 유지 |
 | Karpathy / [`karpathy-guidelines`](plugins/maymust/skills/karpathy-guidelines/SKILL.md) | 구현·리뷰·리팩터링 시 가정 명시, 단순한 구현, 최소 변경, 검증 가능한 목표 |
+| pstack(이식) / [`benchmark-checklist`](plugins/maymust/skills/benchmark-checklist/SKILL.md) | 측정한 성능 수치를 보고하거나 그 수치로 결정하기 전 검증 |
 
 Attention Span의 `spartan`·`rundown`은 사용자가 고르는 대체 응답 스타일,
 `tldr`은 요청한 자료를 요약하는 선택형 스킬입니다. Claude에서는 제공된 native
@@ -60,7 +74,9 @@ Claude 설치 후에는 `/reload-plugins`와 새 세션으로 적용을 확인�
 사용하고, 변화 없는 상태 보고마다 같은 검사를 반복하지 않습니다.
 
 외부 원본은 commit SHA에 고정되어 설치 중 최신 `main`을 내려받지 않습니다.
-Attention Span은 **AGPL-3.0**, 두 다른 소스는 MIT를 선언합니다. 원본 라이선스,
+Attention Span은 **AGPL-3.0**, 세 다른 소스는 MIT를 선언합니다. pstack 자료는
+원본을 그대로 복사하지 않고 팀 흐름에 맞게 수정해 이식했으므로, lock 파일에 원본
+파일 hash를 기록하고 각 파일 첫 줄에 원본 경로와 commit을 남깁니다. 원본 라이선스,
 Karpathy 저장소의 별도 LICENSE 파일 부재, 팀 적용 변경점은
 [`THIRD_PARTY_NOTICES.md`](plugins/maymust/THIRD_PARTY_NOTICES.md)에 기록합니다.
 
@@ -156,11 +172,14 @@ enabled = true
 
 ```
 1. /maymust:worklog            ← 작업 시작, worklog 생성
+   /maymust:how · /maymust:why ← (필요할 때) 코드 동작과 설계 이유 조사
    (작업 진행)
-   /maymust:worklog log "..."  ← 중간 로그
+   /maymust:worklog log "..."  ← 중간 로그 (판단에는 근거를 함께)
    /maymust:commit [wip]       ← 중간 커밋
+   /maymust:benchmark-checklist ← (성능 수치를 다룰 때) 측정 검증
    ...
 2. /maymust:worklog finish     ← 작업 종료, PR 본문 요약 생성
+   /maymust:blast-radius       ← (영향이 넓은 변경) 영향 범위 점검과 안전 근거 증명
 3. /maymust:pull-request       ← 검증 상태를 솔직하게 기록하여 PR 생성; 미완료 UI 증거는 draft
 4. /maymust:self-review        ← (/clear 후 권장) PR의 의도와 구현 리뷰
 5. /maymust:codex-review <PR>  ← 독립 리뷰·수정 루프, 현재 head에 통과 마커 생성
