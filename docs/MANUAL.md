@@ -3,7 +3,7 @@
 이 문서는 플레이북을 설치하고, 매일의 작업에서 스킬을 쓰고, 문제가 생겼을 때 스스로 해결하는 방법을 정리합니다. 저장소 개요와 스킬 목록은 [README](../README.md)에 있습니다.
 
 - **대상**: 플레이북을 쓰는 팀원, 릴리즈를 맡는 관리자, 스킬을 고치는 개발자
-- **기준 버전**: maymust 0.8.0
+- **기준 버전**: maymust 0.8.1
 
 ## 목차
 
@@ -419,6 +419,7 @@ codex plugin list --marketplace maymust-ai-dev-playbook --available --json
 python3 -B -m unittest discover -s plugins/resource-status-sheets/skills/resource-status-sheets/tests -v
 python3 -B -m unittest discover -s plugins/maymust/skills/merge-loop-review-gate/tests -v
 python3 -B -m unittest discover -s plugins/maymust/hooks/tests -v
+python3 -B -m unittest discover -s scripts/tests -v
 claude plugin validate plugins/maymust
 ```
 
@@ -440,6 +441,20 @@ claude plugin validate plugins/maymust
 | 수정해서 이식 | 원본이 다른 스킬·설정·런타임에 의존할 때(pstack) | lock의 `adapted`에 원본 경로와 원본 sha256, 각 파일 첫 줄에 출처 주석 |
 
 두 방식 모두 고정 commit을 쓰고, 원본 라이선스를 `third-party/`에 보존하고, [THIRD_PARTY_NOTICES](../plugins/maymust/THIRD_PARTY_NOTICES.md)를 갱신합니다. 출처 기록은 테스트가 검사합니다.
+
+### 업스트림 갱신 확인
+
+저장소 루트에서 아래 명령을 실행하면, lock에 기록된 출처마다 최신 commit을 받아 파일 해시를 비교하고 결과를 JSON으로 출력합니다.
+
+```bash
+python3 scripts/check_upstream.py            # 비교만 합니다
+python3 scripts/check_upstream.py --apply    # 안전한 출처만 파일과 lock을 갱신합니다
+```
+
+- `changed`가 `false`이면 갱신할 내용이 없습니다. 업스트림에 새 commit이 있어도 가져온 파일이 같으면 고정 commit을 바꾸지 않습니다.
+- `--apply`는 추적하는 경로가 모두 남아 있고 라이선스 파일이 바뀌지 않은 출처만 갱신합니다. 경로가 사라졌거나(`missing`) 라이선스가 바뀌었으면 `blocked`에 이유를 적고 그 출처는 건드리지 않습니다. 업스트림에서 옮겨진 경로는 lock의 `upstream_path`를 손으로 고칩니다.
+- 수정해서 이식한 자료(`adapted`)는 바뀌었다는 사실만 보고합니다. 바뀐 내용을 읽고 필요한 부분을 손으로 옮깁니다.
+- 파일을 갱신했으면 THIRD_PARTY_NOTICES의 표와 버전 문구를 고치고, 세 매니페스트의 버전을 올리고, 단위 테스트를 실행합니다.
 
 ### 변경 반영 순서
 
