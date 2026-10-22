@@ -122,26 +122,25 @@ Karpathy 저장소의 별도 LICENSE 파일 부재, 팀 적용 변경점은
 
 ## 설치
 
-### Claude Code CLI
+변경은 작업 PR로 `dev`에 먼저 머지되고, `dev` → `main` 릴리즈 PR이 머지된 뒤에 팀원에게 배포됩니다([릴리즈](#릴리즈-관리자)). 그래서 설치할 때 **`main` 브랜치를 지정**합니다. 브랜치를 지정하지 않으면 기본 브랜치인 `dev`의 릴리즈 전 변경을 받습니다.
 
+### Claude Code (CLI · Desktop Code 탭)
+
+터미널에서 실행합니다. Desktop Code 탭도 같은 플러그인 저장소(`~/.claude/plugins`)를 쓰므로 함께 적용됩니다.
+
+```bash
+claude plugin marketplace add 'MayMustAI/ai-dev-playbook#main'
+claude plugin install maymust@maymust-ai-dev-playbook
 ```
-/plugin marketplace add MayMustAI/ai-dev-playbook
-/plugin install maymust@maymust-ai-dev-playbook
-/reload-plugins
-```
 
-### Claude Desktop (Code 탭)
-
-프롬프트 박스 옆 `+` 버튼 → **Plugins** → **Manage plugins** → **Add plugin** 으로 마켓플레이스 `MayMustAI/ai-dev-playbook` 추가한 뒤 `maymust` 플러그인 설치.
+설치한 뒤 새 세션을 시작합니다. Desktop의 Plugins UI(`+` → **Plugins** → **Manage plugins**)로도 추가할 수 있지만, 브랜치가 확실히 지정되도록 위 터미널 명령을 권장합니다.
 
 설치 후 **반드시 Code 탭에서 사용** — Chat 탭에서는 슬래시 명령이 거부됩니다.
 
 ### Codex
 
-Codex 앱의 Plugins UI에서 이 레포를 로컬 마켓플레이스로 추가하거나, CLI에서 다음을 실행합니다:
-
 ```bash
-codex plugin marketplace add /path/to/ai-dev-playbook
+codex plugin marketplace add MayMustAI/ai-dev-playbook --ref main
 codex plugin add maymust@maymust-ai-dev-playbook
 ```
 
@@ -151,7 +150,31 @@ codex plugin add maymust@maymust-ai-dev-playbook
 - `independent-review`: 범용 독립 코드 리뷰
 - `resource-status-sheets`: 범용 월별 리소스 현황표
 
-로컬 설정으로 직접 연결할 때는 `~/.codex/config.toml` 에 다음 형태로 추가합니다:
+### 추적 브랜치 확인과 `main` 전환
+
+예전 안내대로 브랜치 없이 추가했다면 `dev`를 추적하고 있을 수 있습니다.
+
+- **Claude**: `claude plugin marketplace list`의 Source가 `MayMustAI/ai-dev-playbook@main`인지 확인합니다. `@main`이 없으면 마켓플레이스를 다시 추가합니다. 마켓플레이스를 제거하면 그 마켓플레이스에서 설치한 플러그인도 함께 제거되므로 재설치까지 진행합니다.
+
+  ```bash
+  claude plugin marketplace remove maymust-ai-dev-playbook
+  claude plugin marketplace add 'MayMustAI/ai-dev-playbook#main'
+  claude plugin install maymust@maymust-ai-dev-playbook
+  ```
+
+- **Codex**: `~/.codex/config.toml`의 `[marketplaces.maymust-ai-dev-playbook]`에서 `source_type`을 확인합니다.
+  - `source_type = "git"`이면 `ref = "main"`이 있는지 확인합니다. 없거나 다른 값이면 `ref = "main"`으로 고친 뒤 [업데이트](#업데이트) 명령을 실행합니다.
+  - `source_type = "local"`이면(예전 안내의 로컬 경로 설치) `ref`가 적용되지 않으므로 Git 소스로 다시 등록합니다. 로컬 소스는 [로컬 개발용 연결](#로컬-개발용-연결-codex)에만 씁니다.
+
+    ```bash
+    codex plugin marketplace remove maymust-ai-dev-playbook
+    codex plugin marketplace add MayMustAI/ai-dev-playbook --ref main
+    codex plugin add maymust@maymust-ai-dev-playbook
+    ```
+
+### 로컬 개발용 연결 (Codex)
+
+플러그인을 수정하면서 로컬 사본을 직접 연결할 때는 경로를 마켓플레이스로 추가하거나(`codex plugin marketplace add /path/to/ai-dev-playbook`), `~/.codex/config.toml` 에 다음 형태로 추가합니다:
 
 ```toml
 [marketplaces.maymust-ai-dev-playbook]
@@ -185,27 +208,38 @@ enabled = true
 5. /maymust:codex-review <PR>  ← 독립 리뷰·수정 루프, 현재 head에 통과 마커 생성
 6. (동료 리뷰 — 사람)
 7. /maymust:merge              ← 현재 head 리뷰 마커 + 팀 게이트 확인 후 squash(통합 PR은 merge commit) + 정리
+8. (릴리즈) dev → main PR      ← /maymust:pull-request(base main) → /maymust:merge(merge commit, dev 보존) → 팀원 업데이트
 ```
 
 ## 업데이트
 
-레포가 업데이트되면 팀원은 다음으로 받아옵니다.
+새 버전은 `main`에 릴리즈된 뒤에 받을 수 있습니다. 릴리즈 후 각 PC에서 다음을 실행하고 새 세션을 시작합니다.
 
-**CLI**:
-```
-/plugin marketplace update maymust-ai-dev-playbook
-/reload-plugins
+**Claude Code (CLI · Desktop Code 탭)**:
+
+```bash
+claude plugin marketplace update maymust-ai-dev-playbook
+claude plugin update maymust@maymust-ai-dev-playbook
 ```
 
-**Desktop (Code 탭)**: Plugins UI 에서 마켓플레이스 자동 업데이트, 또는 수동 "Refresh".
+`marketplace update`는 마켓플레이스 사본만 갱신합니다. 설치된 플러그인 버전은 `plugin update`까지 실행해야 올라갑니다. 버전은 `claude plugin list`로 확인합니다.
 
 **Codex**:
+
 ```bash
 codex plugin marketplace upgrade maymust-ai-dev-playbook
 codex plugin add maymust@maymust-ai-dev-playbook
 ```
 
-> `maymust` 버전은 Claude 마켓플레이스와 두 런타임의 plugin.json에서 함께 갱신합니다. 공개 Codex 플러그인 버전은 각각의 `.codex-plugin/plugin.json`에서 SemVer로 관리합니다.
+버전은 `codex plugin list -m maymust-ai-dev-playbook`로 확인합니다. 훅 정의(`hooks/codex-hooks.json`)가 바뀐 버전이면 새 세션의 `/hooks`에서 다시 검토·신뢰합니다.
+
+### 릴리즈 (관리자)
+
+1. 작업 PR이 `dev`에 머지된 상태에서 `/maymust:pull-request`로 base `main`, head `dev`인 릴리즈 PR을 만듭니다. 제목은 `chore(release): maymust <버전> dev 변경을 main 에 병합` 형식입니다.
+2. `/maymust:merge`로 머지합니다. 장기 브랜치끼리의 통합 PR이므로 merge commit으로 머지하고 `dev`를 보존합니다. 이미 리뷰된 커밋만 담겼으면 사용자 승인으로 리뷰를 면제합니다.
+3. 팀원에게 위 업데이트 명령을 안내합니다.
+
+> `maymust` 버전은 Claude 마켓플레이스와 두 런타임의 plugin.json에서 함께 갱신합니다. 두 런타임 모두 버전별로 설치본을 구분하므로 릴리즈마다 버전을 올립니다. 공개 Codex 플러그인 버전은 각각의 `.codex-plugin/plugin.json`에서 SemVer로 관리합니다.
 
 ## 개발 — 스킬 수정 시
 
