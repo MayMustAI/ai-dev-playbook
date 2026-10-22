@@ -422,7 +422,7 @@ python3 -B -m unittest discover -s plugins/maymust/hooks/tests -v
 claude plugin validate plugins/maymust
 ```
 
-`quick_validate.py`는 Claude 전용 필드인 `disable-model-invocation`을 경고로 표시합니다. 이 필드가 있는 스킬은 Claude 플러그인 검증과 단위 테스트로 확인합니다. 경고를 없애려고 서드파티 원본(예: Attention Span 스킬)의 필드를 지우지 않습니다. Codex의 호출 정책은 각 스킬의 `agents/openai.yaml`에 따로 있습니다.
+현재 `quick_validate.py`는 Claude 전용 필드인 `disable-model-invocation`을 허용하지 않아서, 이 필드가 있는 스킬(`how`, `why`, Attention Span 스킬)은 `Unexpected key(s)`와 함께 실패(종료 코드 1)합니다. 이런 스킬은 Claude 플러그인 검증과 단위 테스트로 확인합니다. 검증을 통과시키려고 서드파티 원본(예: Attention Span 스킬)의 필드를 지우지 않습니다. Codex의 호출 정책은 각 스킬의 `agents/openai.yaml`에 따로 있습니다.
 
 ### 스킬을 추가하거나 고칠 때
 
