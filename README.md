@@ -162,7 +162,15 @@ codex plugin add maymust@maymust-ai-dev-playbook
   claude plugin install maymust@maymust-ai-dev-playbook
   ```
 
-- **Codex**: `~/.codex/config.toml`의 `[marketplaces.maymust-ai-dev-playbook]`에 `ref = "main"`이 있는지 확인합니다. 없으면 그 줄을 추가한 뒤 [업데이트](#업데이트) 명령을 실행합니다.
+- **Codex**: `~/.codex/config.toml`의 `[marketplaces.maymust-ai-dev-playbook]`에서 `source_type`을 확인합니다.
+  - `source_type = "git"`이면 `ref = "main"`이 있는지 확인합니다. 없거나 다른 값이면 `ref = "main"`으로 고친 뒤 [업데이트](#업데이트) 명령을 실행합니다.
+  - `source_type = "local"`이면(예전 안내의 로컬 경로 설치) `ref`가 적용되지 않으므로 Git 소스로 다시 등록합니다. 로컬 소스는 [로컬 개발용 연결](#로컬-개발용-연결-codex)에만 씁니다.
+
+    ```bash
+    codex plugin marketplace remove maymust-ai-dev-playbook
+    codex plugin marketplace add MayMustAI/ai-dev-playbook --ref main
+    codex plugin add maymust@maymust-ai-dev-playbook
+    ```
 
 ### 로컬 개발용 연결 (Codex)
 
