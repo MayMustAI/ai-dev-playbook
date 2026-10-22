@@ -120,13 +120,15 @@ class CheckUpstreamTests(unittest.TestCase):
         self.assertFalse(report["sources"][0]["applied"])
         self.assertEqual((self.plugin / "skills/x/SKILL.md").read_text(), "v1\n")
 
-    def test_adapted_change_is_reported_but_never_applied(self):
-        self.commit_upstream("method v2", writes=[("notes.md", "method v2\n")])
+    def test_adapted_change_blocks_apply_for_its_source(self):
+        self.commit_upstream("method v2", writes=[("skills/x/SKILL.md", "v2\n"), ("notes.md", "method v2\n")])
         before = self.lock_path.read_text()
         report = self.run_check("--apply")
         self.assertTrue(report["changed"])
         self.assertEqual(self.statuses(report)["notes.md"], "changed")
+        self.assertIn("adapted", report["sources"][0]["blocked"])
         self.assertFalse(report["sources"][0]["applied"])
+        self.assertEqual((self.plugin / "skills/x/SKILL.md").read_text(), "v1\n")
         self.assertEqual(self.lock_path.read_text(), before)
 
 

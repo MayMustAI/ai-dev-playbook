@@ -74,7 +74,8 @@ explicit-only in both runtimes because each run can start several subagents.
 `python3 scripts/check_upstream.py` (from the repository root) compares every tracked
 file with its upstream's latest commit and prints a JSON report. With `--apply` it copies
 changed files and updates the lock, but only for a source whose tracked paths all still
-exist and whose license file did not change; it never edits adapted material.
+exist, whose license file did not change, and whose adapted material did not change.
+It never edits adapted material, so the pinned commit keeps matching every recorded hash.
 
 To update a source, review the new upstream commit, replace only the selected files,
 update the commit and hashes in the lock file and this notice, inspect any license

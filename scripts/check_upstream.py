@@ -2,9 +2,10 @@
 """Compare bundled third-party files with each upstream's latest commit.
 
 Prints a JSON report. With --apply, copies changed upstream files and updates the
-lock file, but only for sources whose tracked paths all still exist and whose
-license file did not change. Adapted material (lock "adapted") is reported only,
-because it is ported by hand.
+lock file, but only for sources whose tracked paths all still exist, whose license
+file did not change, and whose adapted material (lock "adapted") did not change.
+Adapted material is ported by hand, and the pinned commit must match every hash
+recorded for its source.
 """
 
 import argparse
@@ -68,6 +69,8 @@ def check_source(source, plugin, apply):
         blocked = "upstream path missing; update upstream_path in the lock by hand"
     elif any(item["status"] == "changed" and is_license(item["upstream_path"]) for item in files):
         blocked = "license file changed; review the new license before updating"
+    elif any(item["status"] != "same" for item in adapted):
+        blocked = "adapted material changed; port it by hand, then update the commit and hashes"
 
     applied = bool(apply and updates and not blocked)
     if applied:
