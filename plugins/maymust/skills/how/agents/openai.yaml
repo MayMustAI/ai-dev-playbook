@@ -1,0 +1,6 @@
+interface:
+  display_name: "MayMust How"
+  short_description: "코드·서브시스템 동작을 관점별로 탐색해 설명"
+  default_prompt: "이 서브시스템이 어떻게 동작하는지 MayMust how 방식으로 설명해줘."
+policy:
+  allow_implicit_invocation: false

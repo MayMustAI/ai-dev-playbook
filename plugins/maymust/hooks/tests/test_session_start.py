@@ -20,7 +20,7 @@ class CommonProfileTests(unittest.TestCase):
     def test_context_has_resolvable_installed_skill_links_and_no_frontmatter(self):
         context = MODULE.session_context(PLUGIN)
         links = re.findall(r"\]\(<([^>]+)>\)", context)
-        self.assertEqual(len(links), 6)
+        self.assertEqual(len(links), 7)
         for path in links:
             self.assertTrue(Path(path).is_file(), path)
             self.assertTrue(Path(path).is_relative_to(PLUGIN))
@@ -62,7 +62,7 @@ class BundledSourceTests(unittest.TestCase):
         self.lock = json.loads((PLUGIN / "third-party/skills.lock.json").read_text())
 
     def test_upstream_files_match_lock_and_commits_are_pinned(self):
-        self.assertEqual(len(self.lock["sources"]), 3)
+        self.assertEqual(len(self.lock["sources"]), 4)
         for source in self.lock["sources"]:
             self.assertRegex(source["commit"], r"^[0-9a-f]{40}$")
             for file in source["files"]:
@@ -80,6 +80,34 @@ class BundledSourceTests(unittest.TestCase):
             self.assertIn("disable-model-invocation: true", (PLUGIN / "skills" / name / "SKILL.md").read_text())
             self.assertIn("allow_implicit_invocation: false", (PLUGIN / "skills" / name / "agents/openai.yaml").read_text())
 
+    def test_adapted_pstack_material_is_traceable_to_pinned_upstream(self):
+        source = next(source for source in self.lock["sources"] if source["name"] == "pstack")
+        self.assertEqual(source["license"], "MIT")
+        self.assertEqual({file["upstream_path"] for file in source["files"]}, {"pstack/LICENSE"})
+        used = set()
+        for entry in source["adapted"]:
+            self.assertTrue(entry["upstream_path"].startswith("pstack/skills/"), entry)
+            self.assertRegex(entry["upstream_sha256"], r"^[0-9a-f]{64}$")
+            for path in entry["used_in"]:
+                self.assertTrue((PLUGIN / path).is_file(), path)
+                used.add(path)
+        provenance = f"pstack(cursor/plugins@{source['commit'][:7]}, MIT)"
+        for name in ["blast-radius", "benchmark-checklist", "how", "why"]:
+            for path in (PLUGIN / "skills" / name).rglob("*.md"):
+                relative = str(path.relative_to(PLUGIN))
+                self.assertIn(relative, used)
+                self.assertIn(provenance, path.read_text(), relative)
+
+    def test_costly_pstack_skills_are_explicit_in_both_runtimes(self):
+        for name in ["how", "why"]:
+            self.assertIn("disable-model-invocation: true", (PLUGIN / "skills" / name / "SKILL.md").read_text())
+            self.assertIn("allow_implicit_invocation: false", (PLUGIN / "skills" / name / "agents/openai.yaml").read_text())
+
+    def test_bundled_reviewer_prompt_matches_standalone_loop_review(self):
+        standalone = PLUGIN.parents[1] / "plugins/independent-review/skills/loop-review/references/reviewer-prompt.md"
+        self.assertEqual((PLUGIN / "skills/codex-review/references/reviewer-prompt.md").read_bytes(),
+                         standalone.read_bytes())
+
     def test_licenses_and_versions_are_consistent(self):
         codex = json.loads((PLUGIN / ".codex-plugin/plugin.json").read_text())
         claude = json.loads((PLUGIN / ".claude-plugin/plugin.json").read_text())
@@ -90,6 +118,7 @@ class BundledSourceTests(unittest.TestCase):
         self.assertIn("AGPL-3.0", codex["license"])
         self.assertTrue((PLUGIN / "third-party/attention-span/LICENSE").is_file())
         self.assertTrue((PLUGIN / "third-party/superpowers/LICENSE").is_file())
+        self.assertTrue((PLUGIN / "third-party/pstack/LICENSE").is_file())
         self.assertEqual(claude["outputStyles"], "./output-styles/")
 
 

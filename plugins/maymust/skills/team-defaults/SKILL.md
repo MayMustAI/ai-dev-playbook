@@ -47,6 +47,9 @@ Read their actual output, exit codes, and coverage before making the correspondi
 claim. Tests, lint, builds, and manual behavior establish different things; report
 only what the evidence proves, and name required checks that remain unrun or blocked.
 
+Before reporting or acting on a measured performance number, such as a speedup,
+regression, throughput, or latency, follow [benchmark-checklist](../benchmark-checklist/SKILL.md).
+
 Evidence from this task remains current while the relevant files and environment
 are unchanged; another status message alone does not require rerunning checks.
 Rerun affected checks after changes, failures, or new concerns. An agent's summary
