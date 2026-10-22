@@ -8,7 +8,7 @@
       "name": "maymust",
       "source": "./plugins/maymust",
       "description": "MayMust 팀 공용 작업 지침·Attention Span·Karpathy Guidelines·완료 전 검증과 개발 워크플로우·pstack 기반 분석 스킬",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "author": {
         "name": "MayMust"
       },
