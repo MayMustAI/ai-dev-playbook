@@ -1,6 +1,6 @@
 {
   "name": "independent-review",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Independent Claude and Codex review loops for GitHub pull requests and local code changes.",
   "author": {
     "name": "MayMust",

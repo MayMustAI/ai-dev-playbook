@@ -1,0 +1,6 @@
+interface:
+  display_name: "MayMust Why"
+  short_description: "코드가 왜 이렇게 만들어졌는지 출처별 근거로 조사"
+  default_prompt: "이 코드가 왜 이렇게 만들어졌는지 MayMust why 방식으로 조사해줘."
+policy:
+  allow_implicit_invocation: false

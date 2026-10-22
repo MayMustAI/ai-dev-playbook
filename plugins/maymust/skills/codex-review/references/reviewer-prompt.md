@@ -29,7 +29,7 @@ For untracked files listed by the scope command, read those files directly. Read
 3. Debug residue, TODOs, disabled code, and hard-coded test data
 4. Unnecessary complexity or repeated patterns introduced by the change
 5. Clear domain naming
-6. Regression coverage at the closest behavior boundary
+6. Regression coverage at the closest behavior boundary, judged by behavior: a test should fail when the observable behavior breaks and keep passing when only internals change. Flag tests that assert on data they built themselves, derive the expected value from the code under test, or pin internal call order or error wording no caller reads
 7. Input validation, authorization, secrets, injection, traversal, and XSS
 
 Before raising a blocker or must-fix, trace existing validation, authorization, database constraints or transactions, controller barriers, and deployment gates. Do not demand a second defense for an already-enforced invariant. Propose the smallest repair. Do not require migrations, schema/API fields, durable state, background loops, phases, or multi-layer redesigns when a local repair works.

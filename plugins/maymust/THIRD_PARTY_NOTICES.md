@@ -1,16 +1,20 @@
 # Bundled third-party instructions
 
-MayMust 0.7.0 distributes the files below at fixed upstream commits. Installation
+MayMust 0.8.0 distributes the files below at fixed upstream commits. Installation
 does not download upstream `main` or run upstream installers. The complete list of
 copied files and their SHA-256 hashes is in [skills.lock.json](third-party/skills.lock.json).
 Copied instruction/style files are unchanged; MayMust runtime metadata lives beside
 them, and team adaptations live in [team-defaults](skills/team-defaults/SKILL.md).
+Material adapted from pstack is the one exception: it is modified on purpose, so the
+lock file records the hash of each upstream file it came from instead of a hash of
+the shipped copy. See [Adapted material from pstack](#adapted-material-from-pstack-2026-10-22).
 
 | Source | Pinned commit | Included material | Upstream license |
 | --- | --- | --- | --- |
 | [obra/superpowers](https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d) | `8ca22dba9a94f28898bbce59f2537ff4d87c747d` | Only `verification-before-completion/SKILL.md` | MIT |
 | [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/2714c965e6be1fa2597510e66651e63bc67cb448) | `2714c965e6be1fa2597510e66651e63bc67cb448` | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles | AGPL-3.0 |
 | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/tree/2c606141936f1eeef17fa3043a72095b4765b9c2) | `2c606141936f1eeef17fa3043a72095b4765b9c2` | `karpathy-guidelines/SKILL.md` | MIT (declared upstream) |
+| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/f2bad5225cb2d4f5e58b45aa36be89d16a558c13/pstack) | `f2bad5225cb2d4f5e58b45aa36be89d16a558c13` | `LICENSE` copied unchanged; methods from 17 files adapted into MayMust skills (below) | MIT |
 
 ## License notices
 
@@ -26,6 +30,9 @@ them, and team adaptations live in [team-defaults](skills/team-defaults/SKILL.md
   The pinned [upstream README](https://github.com/multica-ai/andrej-karpathy-skills/blob/2c606141936f1eeef17fa3043a72095b4765b9c2/README.md)
   also declares MIT. That upstream commit contains no standalone `LICENSE` file;
   no missing copyright notice has been invented here.
+- pstack: Copyright (c) 2026 Lauren Tan. The upstream MIT notice is preserved in
+  [third-party/pstack/LICENSE](third-party/pstack/LICENSE) and covers the adapted
+  material listed below.
 
 The plugin's license metadata lists both MIT and AGPL-3.0. Do not describe the entire
 bundle as MIT-only or remove the upstream notices when redistributing it.
@@ -40,7 +47,33 @@ checks. Verification evidence must follow the last relevant change; unchanged,
 already-verified work does not need repeated checks for every status message.
 Regression red/green demonstrations preserve the user's working tree.
 
+## Adapted material from pstack, 2026-10-22
+
+pstack's playbook router, PR, merge, autopilot, and worktree-cleanup steps are not
+bundled, because they conflict with the MayMust commit, PR, review, and merge flow.
+Only methods that fit that flow were adapted. Each adapted Markdown file in a new
+skill starts with a provenance comment that names its upstream path and commit.
+
+| Upstream file under `pstack/skills/` | MayMust file under `skills/` |
+| --- | --- |
+| `blast-radius/SKILL.md` | `blast-radius/SKILL.md` |
+| `benchmark-checklist/SKILL.md`, `principle-explain-the-number/SKILL.md` | `benchmark-checklist/SKILL.md` |
+| `how/SKILL.md` and its two prompt templates | `how/` |
+| `why/SKILL.md`, `epistemics.md`, investigator and synthesizer prompts, five source guides | `why/` |
+| `principle-test-behavior-not-implementation/SKILL.md` | test lens in `self-review/SKILL.md` and `codex-review/references/reviewer-prompt.md` |
+| `show-me-your-work/SKILL.md` | evidence rule in `worklog/SKILL.md` |
+
+Changes from upstream: rewritten in Korean to match the other team workflow skills;
+Cursor tool names, model roles, the `pstack-models` rule, and the Cursor adapter
+removed; subagents made optional so the same skills run in Claude Code and Codex;
+`why` sources limited to git, Linear, Notion, and Slack, with `.worklogs/` added to
+the git source; investigators and synthesizers made explicitly read-only; results
+wired to `pull-request`, `worklog`, and `codex-review`. `how` and `why` are
+explicit-only in both runtimes because each run can start several subagents.
+
 To update a source, review the new upstream commit, replace only the selected files,
 update the commit and hashes in the lock file and this notice, inspect any license
 changes, run the hook/distribution tests, and bump the plugin version. Preserve the
-one-skill selection for Superpowers.
+one-skill selection for Superpowers. For pstack, compare each upstream path at the
+new commit with its `upstream_sha256`, port the relevant changes by hand, and then
+update the commit, hashes, and provenance comments.

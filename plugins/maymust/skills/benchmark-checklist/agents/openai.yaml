@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Benchmark Checklist"
+  short_description: "성능 수치를 보고하기 전 7개 질문으로 측정을 검증"
+  default_prompt: "이 성능 측정 결과를 MayMust benchmark-checklist로 검증해줘."

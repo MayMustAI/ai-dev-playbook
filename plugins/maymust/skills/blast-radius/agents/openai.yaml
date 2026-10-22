@@ -1,0 +1,4 @@
+interface:
+  display_name: "MayMust Blast Radius"
+  short_description: "변경의 영향 범위를 찾고 안전 근거를 실행으로 증명"
+  default_prompt: "현재 브랜치 변경의 영향 범위를 MayMust 방식으로 점검해줘."
