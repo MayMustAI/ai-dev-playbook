@@ -1,6 +1,7 @@
 // Measures what the current viewport of a rendered slide shows.
 // Evaluate the whole file as one expression in the page; it returns plain JSON data.
 // render_html.py uses it, and any browser tool that can run page scripts can too.
+// It briefly inserts probe elements, so take the screenshot first.
 (() => {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -15,11 +16,21 @@
   const shown = (el) => getComputedStyle(el).visibility === "visible" && opacity(el) >= 0.1;
   const onScreen = (rect) => rect.width > 0 && rect.height > 0 &&
     rect.right > 0 && rect.bottom > 0 && rect.left < vw && rect.top < vh;
-  // Computed font-size times any CSS transform scale, i.e. the size on the presentation screen.
+  // Font size on the presentation screen, after CSS zoom and transforms: the drawn height of a
+  // 1em probe inside the element. SVG text cannot hold the probe, so use its screen transform.
   const renderedFontPx = (el) => {
-    const size = parseFloat(getComputedStyle(el).fontSize);
-    const scale = el.offsetHeight > 0 ? el.getBoundingClientRect().height / el.offsetHeight : 1;
-    return Math.round(size * scale * 10) / 10;
+    let px;
+    if (el instanceof SVGGraphicsElement) {
+      const matrix = el.getScreenCTM();
+      px = parseFloat(getComputedStyle(el).fontSize) * (matrix ? Math.hypot(matrix.c, matrix.d) : 1);
+    } else {
+      const probe = document.createElement("span");
+      probe.style.cssText = "display:inline-block;width:0;height:1em;margin:0;padding:0;border:0";
+      el.appendChild(probe);
+      px = probe.getBoundingClientRect().height;
+      probe.remove();
+    }
+    return Math.round(px * 10) / 10;
   };
   const alpha = (color) => {
     const match = color.match(/rgba?\(([^)]*)\)/);

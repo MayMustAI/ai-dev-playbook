@@ -46,21 +46,26 @@ class RenderHtmlTests(unittest.TestCase):
             <section><h1>메시지 하나</h1><p class="note">작은 각주</p></section>
             <section><div class="card">하나</div><div class="card">둘</div><ul><li>가</li><li>나</li><li>다</li></ul></section>
             <section><div class="half"><p style="font-size: 40px">절반</p></div>
-              <p class="fade">나중에 보임</p><p style="visibility: hidden">숨김</p></section>""", """
+              <p class="fade">나중에 보임</p><p style="visibility: hidden">숨김</p></section>
+            <section><svg width="200" height="100" viewBox="0 0 800 400"><text y="60" font-size="40">도표</text></svg>
+              <div style="zoom: 1.5"><p style="font-size: 20px">확대</p></div></section>""", """
             section { height: 100vh; overflow: hidden; }
-            h1 { font-size: 72px; } .note { font-size: 12px; } .card { background: #eee; }
+            h1 { font-size: 72px; } .note { font-size: 12px; line-height: 1.2; } .card { background: #eee; }
             .half { transform: scale(0.5); transform-origin: top left; }
             .fade { font-size: 24px; opacity: 0; animation: fade 30s forwards; }
             @keyframes fade { to { opacity: 1; } }""")
         slides = self.render("--selector", "section", str(deck))
 
-        self.assertEqual([png_size(slide["image"]) for slide in slides], [(800, 450)] * 3)
-        title, cards, final = (slide["metrics"] for slide in slides)
+        self.assertEqual([png_size(slide["image"]) for slide in slides], [(800, 450)] * 4)
+        title, cards, final, scaled = (slide["metrics"] for slide in slides)
+        # A fractional line height must not change the measured 12px.
         self.assertEqual((title["chars"], title["min_font_px"], title["max_font_px"], title["max_font_text"]),
                          (9, 12, 72, "메시지 하나"))
         self.assertEqual((cards["chars"], cards["boxes"], cards["items"], cards["units"]), (6, 2, 3, 5))
         # The 40px text is drawn at half size, the faded-in line counts, the hidden one does not.
         self.assertEqual((final["chars"], final["min_font_px"], final["max_font_px"]), (7, 20, 24))
+        # SVG text drawn at a quarter of 40px, and 20px text under CSS zoom 1.5.
+        self.assertEqual((scaled["chars"], scaled["min_font_px"], scaled["max_font_px"]), (4, 10, 30))
 
     def test_show_switches_decks_that_display_one_slide_at_a_time(self):
         deck = self.page("deck.html", """

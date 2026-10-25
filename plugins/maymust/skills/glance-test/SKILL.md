@@ -47,7 +47,7 @@ disable-model-invocation: true
      ```
 
      CSS 애니메이션과 전환은 스크립트가 끝 상태로 보낸다. 클릭할 때마다 하나씩 나타나는 요소처럼 덱 코드가 보여 주는 요소는 `--show`에서 모두 보이게 만든다
-   - PDF: `pdftoppm -png -scale-to-x 1600 -scale-to-y -1 deck.pdf <tmp>/slide`
+   - PDF: `pdfinfo deck.pdf`의 Page size로 페이지 비율을 확인하고, 장 전체가 발표 화면(W×H) 안에 들어가도록 한 변을 맞춘다. 페이지가 화면보다 가로로 길거나 비율이 같으면 `pdftoppm -png -scale-to-x W -scale-to-y -1 deck.pdf <tmp>/slide`, 세로로 길면 `-scale-to-x -1 -scale-to-y H`를 쓴다. 결과 이미지가 W×H 안에 드는지 확인하고, 비율이 달라 실제 화면에서 여백이 생기면 보고서에 밝힌다
    - PPTX: LibreOffice로 PDF를 만든 뒤(`soffice --headless --convert-to pdf --outdir <tmp> deck.pptx`) PDF처럼 처리한다
    - 이미지 묶음: 그대로 쓰고, 비율이 발표 화면과 다르면 보고서에 밝힌다
 3. **맥락 없는 판독** — [reader-prompt.md](references/reader-prompt.md)를 채워 검토자에게 맡긴다. 검토자는 장마다 판정, 처음 눈이 가는 곳, 3초 뒤 남는 메시지 한 문장(없으면 "불분명")을 내고, BORDERLINE과 FAIL에는 주된 원인과 구체적인 수정안 하나를 붙인다

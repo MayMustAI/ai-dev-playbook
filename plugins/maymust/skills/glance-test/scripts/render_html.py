@@ -230,9 +230,9 @@ def main(argv=None):
                                                args.show or DEFAULT_SHOW), start=1):
             time.sleep(args.wait / 1000)
             page.evaluate(SETTLE)
-            metrics = page.evaluate(measure)
             image = out / f"slide-{number:02d}.png"
             image.write_bytes(page.screenshot())
+            metrics = page.evaluate(measure)
             results.append({"slide": number, "source": source, "image": str(image), "metrics": metrics})
     finally:
         page.close()
