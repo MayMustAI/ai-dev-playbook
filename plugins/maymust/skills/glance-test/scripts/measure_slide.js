@@ -14,32 +14,32 @@
     return value;
   };
   const shown = (el) => getComputedStyle(el).visibility === "visible" && opacity(el) >= 0.1;
-  // Whether some of rect survives the viewport and every ancestor that clips it, starting at
-  // `from` for a box positioned as `position`. Overflow other than visible clips descendants;
-  // absolutely positioned boxes escape non-positioned ancestors, and fixed boxes escape all
-  // but transformed ones. Scrolling on html and body is the viewport itself. A sliver of 1px
-  // or less, such as screen-reader-only text, does not count.
-  const survives = (rect, from, position) => {
-    let left = Math.max(rect.left, 0);
-    let top = Math.max(rect.top, 0);
-    let right = Math.min(rect.right, vw);
-    let bottom = Math.min(rect.bottom, vh);
+  // Region where content under `from` can be seen, for a box positioned as `position`: the
+  // viewport cut by every ancestor that clips it. Overflow other than visible clips
+  // descendants; absolutely positioned boxes escape non-positioned ancestors, and fixed boxes
+  // escape all but transformed ones. Scrolling on html and body is the viewport itself.
+  const clipBox = (from, position) => {
+    const box = { left: 0, top: 0, right: vw, bottom: vh };
     for (let node = from; node && node !== document.body && node !== document.documentElement;
          node = node.parentElement) {
       const style = getComputedStyle(node);
       if (position === "absolute" && style.position === "static" && style.transform === "none") continue;
       if (position === "fixed" && style.transform === "none") continue;
       if (style.overflowX !== "visible" || style.overflowY !== "visible") {
-        const box = node.getBoundingClientRect();
-        left = Math.max(left, box.left);
-        top = Math.max(top, box.top);
-        right = Math.min(right, box.right);
-        bottom = Math.min(bottom, box.bottom);
+        const rect = node.getBoundingClientRect();
+        box.left = Math.max(box.left, rect.left);
+        box.top = Math.max(box.top, rect.top);
+        box.right = Math.min(box.right, rect.right);
+        box.bottom = Math.min(box.bottom, rect.bottom);
       }
       position = style.position;
     }
-    return right - left > 1 && bottom - top > 1;
+    return box;
   };
+  // A sliver of 1px or less, such as screen-reader-only text, does not count as seen.
+  const overlaps = (rect, box) =>
+    Math.min(rect.right, box.right) - Math.max(rect.left, box.left) > 1 &&
+    Math.min(rect.bottom, box.bottom) - Math.max(rect.top, box.top) > 1;
   // Font size on the presentation screen, after CSS zoom and transforms: the drawn height of a
   // 1em probe inside the element. SVG text cannot hold the probe, so use its screen transform.
   const renderedFontPx = (el) => {
@@ -76,15 +76,28 @@
   let minFont = null;
   let maxFont = null;
   let maxFontText = "";
+  const range = document.createRange();
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    const text = node.textContent.replace(/\s+/g, "");
     const el = node.parentElement;
-    if (!text || !el || !shown(el)) continue;
-    const range = document.createRange();
+    if (!el || !/\S/.test(node.textContent) || !shown(el)) continue;
+    // Count only the characters drawn inside the visible region, so text cut off by a clipping
+    // box or the screen edge counts just its visible part.
+    const box = clipBox(el, "static");
     range.selectNodeContents(node);
-    if (![...range.getClientRects()].some((rect) => survives(rect, el, "static"))) continue;
-    chars += [...text].length;
+    if (![...range.getClientRects()].some((rect) => overlaps(rect, box))) continue;
+    let count = 0;
+    let offset = 0;
+    for (const character of node.textContent) {
+      if (/\S/.test(character)) {
+        range.setStart(node, offset);
+        range.setEnd(node, offset + character.length);
+        if ([...range.getClientRects()].some((rect) => overlaps(rect, box))) count += 1;
+      }
+      offset += character.length;
+    }
+    if (!count) continue;
+    chars += count;
     const font = renderedFontPx(el);
     if (minFont === null || font < minFont) minFont = font;
     if (maxFont === null || font > maxFont) {
@@ -99,7 +112,7 @@
   const visible = (el) => {
     const rect = el.getBoundingClientRect();
     return shown(el) && hasText(el) &&
-      survives(rect, el.parentElement, getComputedStyle(el).position) ? rect : null;
+      overlaps(rect, clipBox(el.parentElement, getComputedStyle(el).position)) ? rect : null;
   };
   const candidates = [...document.body.querySelectorAll("*")].filter((el) => {
     if (el.matches("li, tr, td, th")) return false;
