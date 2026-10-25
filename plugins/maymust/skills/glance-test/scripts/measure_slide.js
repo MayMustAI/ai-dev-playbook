@@ -2,6 +2,8 @@
 // Evaluate the whole file as one expression in the page; it returns plain JSON data.
 // render_html.py uses it, and any browser tool that can run page scripts can too.
 // It briefly inserts probe elements, so take the screenshot first.
+// The numbers are approximate by design: text drawn in images or canvas, CSS generated
+// content, and text inside shadow roots is not counted, and text covered by other elements is.
 (() => {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
