@@ -3,7 +3,7 @@
 이 문서는 플레이북을 설치하고, 매일의 작업에서 스킬을 쓰고, 문제가 생겼을 때 스스로 해결하는 방법을 정리합니다. 저장소 개요와 스킬 목록은 [README](../README.md)에 있습니다.
 
 - **대상**: 플레이북을 쓰는 팀원, 릴리즈를 맡는 관리자, 스킬을 고치는 개발자
-- **기준 버전**: maymust 0.8.1
+- **기준 버전**: maymust 0.9.0
 
 ## 목차
 
@@ -285,6 +285,16 @@ Claude에서는 `/maymust:<스킬>`, Codex에서는 `$maymust:<스킬>`로 호�
 - **결과**: 질문, 대상 코드, 확인된 사실, 합리적 추론, 경쟁 가설, 모르는 것, 조사한 출처, 신뢰도 요약. 코드를 바꾸려는 질문이면 유지 / 변경 / 피할 것 / 위험 목록이 붙습니다.
 - **주의**: 조사는 읽기 전용입니다. 페이지·이슈를 만들거나 메시지를 보내지 않습니다. 결과를 PR이나 공개 문서에 옮길 때는 비공개 정보를 지웁니다.
 
+### 발표 자료 스킬
+
+#### `glance-test`
+
+- **언제**: 발표 전에 슬라이드가 3초 안에 핵심 메시지 하나를 전하는지 점검할 때. 낸시 두아르테(Nancy Duarte)가 알린 글랜스 테스트 기준을 씁니다.
+- **호출**: `/maymust:glance-test <덱 파일> [화면 크기]` (명시 호출 전용). 크기를 주지 않으면 1600×900을 씁니다. 의도한 메시지나 발표자 노트가 있으면 함께 줍니다.
+- **하는 일**: 장마다 발표 크기 이미지를 만들고(HTML은 스킬의 `scripts/render_html.py`, PDF는 `pdftoppm`, PPTX는 LibreOffice로 PDF 변환), 덱 내용을 모르는 검토자가 PASS·BORDERLINE·FAIL로 판독합니다. 3초 뒤 남는 메시지를 의도와 비교하고, 보이는 글자 수·시각 단위 수·가장 작은 글자 크기를 근거로 덧붙입니다.
+- **결과**: 판정별 장 수와 본보기 장, 실패 장 표(3초 뒤 남는 것, 원인, 고칠 방향), 원인별로 묶은 경계 장, 고칠 때 지킬 것, 세부 자료를 옮길 곳
+- **주의**: 점검할 때는 덱을 고치지 않고 고칠 범위(전부 / 제목과 군더더기만 / 실패 장만)를 묻습니다. 고친 뒤에는 바뀐 장만 다시 판독해 수정 전후 판정을 보여 줍니다. HTML 렌더링에는 macOS·Linux에서 Python 3과 Chrome이 필요합니다.
+
 ### 공통 지침 스킬
 
 - `team-defaults`: 세션 시작 훅이 주입하는 공통 지침입니다. 훅이 없는 환경에서 직접 호출합니다.
@@ -420,10 +430,11 @@ python3 -B -m unittest discover -s plugins/resource-status-sheets/skills/resourc
 python3 -B -m unittest discover -s plugins/maymust/skills/merge-loop-review-gate/tests -v
 python3 -B -m unittest discover -s plugins/maymust/hooks/tests -v
 python3 -B -m unittest discover -s scripts/tests -v
+python3 -B -m unittest discover -s plugins/maymust/skills/glance-test/tests -v
 claude plugin validate plugins/maymust
 ```
 
-현재 `quick_validate.py`는 Claude 전용 필드인 `disable-model-invocation`을 허용하지 않아서, 이 필드가 있는 스킬(`how`, `why`, Attention Span 스킬)은 `Unexpected key(s)`와 함께 실패(종료 코드 1)합니다. 이런 스킬은 Claude 플러그인 검증과 단위 테스트로 확인합니다. 검증을 통과시키려고 서드파티 원본(예: Attention Span 스킬)의 필드를 지우지 않습니다. Codex의 호출 정책은 각 스킬의 `agents/openai.yaml`에 따로 있습니다.
+현재 `quick_validate.py`는 Claude 전용 필드인 `disable-model-invocation`을 허용하지 않아서, 이 필드가 있는 스킬(`how`, `why`, `glance-test`, Attention Span 스킬)은 `Unexpected key(s)`와 함께 실패(종료 코드 1)합니다. 이런 스킬은 Claude 플러그인 검증과 단위 테스트로 확인합니다. 검증을 통과시키려고 서드파티 원본(예: Attention Span 스킬)의 필드를 지우지 않습니다. Codex의 호출 정책은 각 스킬의 `agents/openai.yaml`에 따로 있습니다.
 
 ### 스킬을 추가하거나 고칠 때
 

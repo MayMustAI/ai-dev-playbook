@@ -98,8 +98,8 @@ class BundledSourceTests(unittest.TestCase):
                 self.assertIn(relative, used)
                 self.assertIn(provenance, path.read_text(), relative)
 
-    def test_costly_pstack_skills_are_explicit_in_both_runtimes(self):
-        for name in ["how", "why"]:
+    def test_costly_skills_are_explicit_in_both_runtimes(self):
+        for name in ["how", "why", "glance-test"]:
             self.assertIn("disable-model-invocation: true", (PLUGIN / "skills" / name / "SKILL.md").read_text())
             self.assertIn("allow_implicit_invocation: false", (PLUGIN / "skills" / name / "agents/openai.yaml").read_text())
 
