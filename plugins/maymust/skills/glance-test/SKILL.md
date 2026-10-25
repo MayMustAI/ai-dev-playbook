@@ -50,13 +50,13 @@ disable-model-invocation: true
      CSS 애니메이션과 전환은 스크립트가 끝 상태로 보낸다. 클릭할 때마다 하나씩 나타나는 요소처럼 덱 코드가 보여 주는 요소는 `--show`에서 모두 보이게 만든다
    - PDF: `pdfinfo deck.pdf`의 Page size로 페이지 비율을 확인한다. 비율이 발표 화면(W×H)과 같거나 1% 안으로 다르면 `pdftoppm -png -scale-to-x W -scale-to-y H deck.pdf <tmp>/slide`로 정확한 크기를 만든다. 더 다르면 장 전체가 화면 안에 들어가도록 한 변만 맞추고(가로로 길면 `-scale-to-x W -scale-to-y -1`, 세로로 길면 `-scale-to-x -1 -scale-to-y H`), 실제 화면에 생기는 여백을 보고서에 밝힌다
      - pdftoppm이 없으면 Chrome의 PDF 뷰어로 찍는다. 쪽마다 `"deck.pdf#page=N&toolbar=0&navpanes=0&view=Fit"`를 render_html.py의 대상으로 나열하고, 뷰어가 그릴 시간을 주도록 `--wait 1500`을 붙이면 뷰어 UI 없이 장이 화면에 맞춰진다. 이때 나오는 지표는 PDF 내용을 재지 못하므로 쓰지 않는다
-     - 둘 다 없을 때 Claude Code는 파일 읽기 도구로 PDF 쪽을 직접 볼 수 있다. 이미지 크기는 도구가 정하므로 마지막 대안으로 쓰고, 검토자에게는 덱 제목이 드러나지 않는 이름으로 복사한 PDF와 쪽 번호를 준다. Codex의 이미지 도구는 PDF를 열지 못한다
    - PPTX: 덱을 만든 앱에서 PDF로 내보내는 것이 가장 정확하다. 내보낸 PDF는 위 PDF 방법으로 처리한다. Claude Code와 Codex 모두 PPTX를 직접 보지 못한다
-     - PowerPoint(macOS)는 덱을 임시 폴더에 내용이 드러나지 않는 이름으로 복사한 뒤, 그 복사본을 아래 AppleScript로 열어 PDF로 내보내고 저장하지 않고 닫는다. 복사본을 쓰므로 사용자가 PowerPoint에 열어 둔 원본 창은 건드리지 않는다(원본에서 저장하지 않은 편집은 반영되지 않는다). PowerPoint는 임시 폴더에 대해 "파일 액세스 부여" 창을 띄울 수 있으므로, 실행 전에 사용자에게 알리고 사용자가 허용하게 한다
+     - PowerPoint(macOS)는 덱을 임시 폴더에 내용이 드러나지 않는 이름으로 복사한 뒤, 그 복사본을 아래 AppleScript로 열어 PDF로 내보내고 저장하지 않고 닫는다. 스크립트는 PowerPoint에 열린 프레젠테이션이 있으면 오류로 멈춘다. 그래야 사용자가 열어 둔 창을 닫거나 저장하지 않은 편집을 버리는 일이 없다. 멈추면 사용자에게 저장하고 닫아 달라고 하거나 PDF로 직접 내보내 달라고 요청한다
+     - 실행 전에 사용자에게 알린다. PowerPoint는 임시 폴더에 대해 "파일 액세스 부여" 창을 띄울 수 있고, 사용자가 허용해야 한다
 
        ```bash
        cp deck.pptx <tmp>/glance-deck.pptx
-       osascript -e 'on run argv' -e 'set inFile to POSIX file (item 1 of argv)' -e 'set outPath to (POSIX file (item 2 of argv)) as text' -e 'tell application "Microsoft PowerPoint"' -e 'open inFile' -e 'save active presentation in outPath as save as PDF' -e 'close active presentation saving no' -e 'end tell' -e 'end run' <tmp>/glance-deck.pptx <tmp>/glance-deck.pdf
+       osascript -e 'on run argv' -e 'set inFile to POSIX file (item 1 of argv)' -e 'set outPath to (POSIX file (item 2 of argv)) as text' -e 'tell application "Microsoft PowerPoint"' -e 'if (count of presentations) > 0 then error "PowerPoint has open presentations; save and close them first."' -e 'open inFile' -e 'save active presentation in outPath as save as PDF' -e 'close active presentation saving no' -e 'end tell' -e 'end run' <tmp>/glance-deck.pptx <tmp>/glance-deck.pdf
        ```
 
      - PowerPoint가 없고 Keynote가 있으면 Keynote에서 PDF로 내보낸다
