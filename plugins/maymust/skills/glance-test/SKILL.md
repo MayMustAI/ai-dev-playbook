@@ -48,9 +48,21 @@ disable-model-invocation: true
      ```
 
      CSS 애니메이션과 전환은 스크립트가 끝 상태로 보낸다. 클릭할 때마다 하나씩 나타나는 요소처럼 덱 코드가 보여 주는 요소는 `--show`에서 모두 보이게 만든다
-   - PDF: `pdfinfo deck.pdf`의 Page size로 페이지 비율을 확인하고, 장 전체가 발표 화면(W×H) 안에 들어가도록 한 변을 맞춘다. 페이지가 화면보다 가로로 길거나 비율이 같으면 `pdftoppm -png -scale-to-x W -scale-to-y -1 deck.pdf <tmp>/slide`, 세로로 길면 `-scale-to-x -1 -scale-to-y H`를 쓴다. 결과 이미지가 W×H 안에 드는지 확인하고, 비율이 달라 실제 화면에서 여백이 생기면 보고서에 밝힌다
-   - PPTX: LibreOffice로 PDF를 만든 뒤(`soffice --headless --convert-to pdf --outdir <tmp> deck.pptx`) PDF처럼 처리한다
+   - PDF: `pdfinfo deck.pdf`의 Page size로 페이지 비율을 확인한다. 비율이 발표 화면(W×H)과 같거나 1% 안으로 다르면 `pdftoppm -png -scale-to-x W -scale-to-y H deck.pdf <tmp>/slide`로 정확한 크기를 만든다. 더 다르면 장 전체가 화면 안에 들어가도록 한 변만 맞추고(가로로 길면 `-scale-to-x W -scale-to-y -1`, 세로로 길면 `-scale-to-x -1 -scale-to-y H`), 실제 화면에 생기는 여백을 보고서에 밝힌다
+     - pdftoppm이 없으면 Chrome의 PDF 뷰어로 찍는다. 쪽마다 `"deck.pdf#page=N&toolbar=0&navpanes=0&view=Fit"`를 render_html.py의 대상으로 나열하면 뷰어 UI 없이 장이 화면에 맞춰진다. 이때 나오는 지표는 PDF 내용을 재지 못하므로 쓰지 않는다
+     - 둘 다 없을 때 Claude Code는 파일 읽기 도구로 PDF 쪽을 직접 볼 수 있다. 이미지 크기는 도구가 정하므로 마지막 대안으로 쓰고, 검토자에게는 덱 제목이 드러나지 않는 이름으로 복사한 PDF와 쪽 번호를 준다. Codex의 이미지 도구는 PDF를 열지 못한다
+   - PPTX: 덱을 만든 앱에서 PDF로 내보내는 것이 가장 정확하다. 내보낸 PDF는 위 PDF 방법으로 처리한다. Claude Code와 Codex 모두 PPTX를 직접 보지 못한다
+     - PowerPoint(macOS)는 아래 AppleScript로 내보낸다. 덱을 저장하지 않고 닫는다. PowerPoint는 출력 폴더에 대해 "파일 액세스 부여" 창을 띄울 수 있으므로, 실행 전에 사용자에게 알리고 사용자가 허용하게 한다
+
+       ```bash
+       osascript -e 'on run argv' -e 'set inFile to POSIX file (item 1 of argv)' -e 'set outPath to (POSIX file (item 2 of argv)) as text' -e 'tell application "Microsoft PowerPoint"' -e 'open inFile' -e 'save active presentation in outPath as save as PDF' -e 'close active presentation saving no' -e 'end tell' -e 'end run' deck.pptx <tmp>/deck.pdf
+       ```
+
+     - PowerPoint가 없고 Keynote가 있으면 Keynote에서 PDF로 내보낸다
+     - LibreOffice(`soffice --headless --convert-to pdf --outdir <tmp> deck.pptx`)는 이 앱들이 없을 때만 쓴다. 덱에 쓴 글꼴이 없으면 글자가 빠지거나 다른 글꼴로 바뀔 수 있다
+     - 모두 안 되면 사용자에게 PowerPoint에서 PDF로 내보내 달라고 요청한다
    - 이미지 묶음: 그대로 쓰고, 비율이 발표 화면과 다르면 보고서에 밝힌다
+   - 판독을 맡기기 전에 렌더링한 이미지를 몇 장 직접 열어, 글자가 빠지거나 다른 글꼴로 바뀌거나 잘리지 않았는지 확인한다. 문제가 있으면 다른 방법으로 다시 렌더링하거나 사용자에게 PDF를 요청한다. 렌더링 결함은 덱의 문제로 판정하지 않는다
 3. **맥락 없는 판독** — [reader-prompt.md](references/reader-prompt.md)를 채워 검토자에게 맡긴다. 검토자는 장마다 판정, 처음 눈이 가는 곳, 3초 뒤 남는 메시지 한 문장(없으면 "불분명")을 내고, BORDERLINE과 FAIL에는 주된 원인과 구체적인 수정안 하나를 붙인다
 4. **객관 지표** — 원본에 접근할 수 있으면 장별로 보이는 글자 수, 시각 단위(카드·행·항목) 수, 실제로 렌더링된 가장 작은 글자 크기를 잰다
    - HTML: 렌더링 결과의 `chars`, `units`(`boxes`는 카드·상자, `items`는 목록 항목과 표의 행), `min_font_px`를 쓴다. `max_font_px`와 `max_font_text`로는 가장 크게 보이는 글자가 메시지인지 주제어인지 확인한다. 다른 브라우저 도구로 렌더링했다면 [measure_slide.js](scripts/measure_slide.js)를 장마다 페이지에서 실행해 같은 정의로 잰다
@@ -61,6 +73,7 @@ disable-model-invocation: true
    - 3초 뒤 남는 메시지를 의도한 메시지와 비교한다. 의도는 사용자가 밝힌 것, 발표자 노트, 덱 내용 순으로 찾고, 덱 내용에서 추론한 의도는 "추론"으로 표시한다
    - 깔끔해 보여도 남는 메시지가 의도와 다르면 PASS가 아니다. 의도의 일부만 남으면 BORDERLINE, 다른 메시지가 남으면 FAIL로 바꾸고 이유를 적는다
    - 검토자가 FAIL로 판정한 장 가운데 2~3장(적으면 전부)은 직접 이미지를 보고 확인한다. 검토자의 보고는 단서이지 증거가 아니다. 판정을 바꾸면 이유를 적는다
+   - 검토자가 글자 누락처럼 렌더링 결함으로 보이는 것을 지적하면, 이미지와 원본을 비교해 확인한다. 렌더링 결함이면 2단계로 돌아가 다른 방법으로 다시 렌더링하고, 그 장은 다시 판독한다
 6. **보고** — 아래 [보고 형식](#보고-형식)에 맞춰 한국어로 보고한다
 7. **수정 범위 확인** — 점검 단계에서는 고치지 않는다. 보고서 끝에서 고칠 범위를 묻는다: 전부 / 제목과 군더더기만 / 실패 장만. 고친 뒤에는 바뀐 장만 다시 렌더링하고, 새 검토자에게 같은 방식으로 판독을 맡겨 수정 전후 판정을 보여 준다
 
