@@ -20,6 +20,8 @@ status: complete
 
 - 12:35 — `claude -p --plugin-dir plugins/maymust`로 `/maymust:glance-test`를 6장짜리 시험 HTML 덱에 실행(155초, 성공). `--selector "section.slide"`로 렌더링하고, 별도 서브에이전트가 이미지 6장만 열어 판독(프롬프트에 덱 경로와 의도 없음). 메인 에이전트가 2·3·4·5장 이미지를 직접 확인. 결과 PASS 2 · BORDERLINE 2 · FAIL 2, 3장은 의도("순서")와 대조해 PASS에서 BORDERLINE으로 변경, 의도를 주지 않은 5장은 "추론"으로 표시. 보고서가 지정 형식(실패 장 표, 원인별 경계 장, 지킬 것, 옮길 곳, 수정 범위 질문)과 일치하고 덱 파일은 바뀌지 않음
 
+- 12:56 — codex 리뷰 R1~R5(PR #15). 수용한 must-fix: SVG 글자 배율과 PDF 렌더링 크기(709e395), 측정용 요소를 덱 CSS에서 격리(5bb4f60), 조상 overflow로 잘린 글자 제외(3690c59), 일부만 보이는 문단은 보이는 글자만 집계(8dd082c), 검토자가 부모 대화를 물려받지 않게 명시(R5). 리뷰 중 직접 찾아 함께 고친 것: 정수 offsetHeight로 생긴 글자 크기 반올림 오차, 표 칸을 상자로 세던 중복 집계. 각 수정은 레드 체크로 테스트가 실패하는 것을 확인
+
 ## 결정 노트 (재사용 가치)
 
 - HTML 렌더러는 Chrome DevTools 파이프(`--remote-debugging-pipe`)로 구동한다. Python 표준 라이브러리만 쓰므로 WebSocket 클라이언트나 Playwright 설치가 필요 없다 (`plugins/maymust/skills/glance-test/scripts/render_html.py`)
