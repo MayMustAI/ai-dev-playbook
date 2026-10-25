@@ -1,6 +1,6 @@
 # Bundled third-party instructions
 
-MayMust 0.9.0 distributes the files below at fixed upstream commits. Installation
+MayMust 0.9.1 distributes the files below at fixed upstream commits. Installation
 does not download upstream `main` or run upstream installers. The complete list of
 copied files and their SHA-256 hashes is in [skills.lock.json](third-party/skills.lock.json).
 Copied instruction/style files are unchanged; MayMust runtime metadata lives beside
