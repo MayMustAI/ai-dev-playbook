@@ -51,6 +51,7 @@ class RenderHtmlTests(unittest.TestCase):
               <div style="zoom: 1.5"><p style="font-size: 20px">확대</p></div></section>""", """
             section { height: 100vh; overflow: hidden; }
             h1 { font-size: 72px; } .note { font-size: 12px; line-height: 1.2; } .card { background: #eee; }
+            span { font-size: 12px; } h1 * { font-size: 8px !important; max-height: 2px !important; zoom: 3 !important; }
             .half { transform: scale(0.5); transform-origin: top left; }
             .fade { font-size: 24px; opacity: 0; animation: fade 30s forwards; }
             @keyframes fade { to { opacity: 1; } }""")
@@ -58,7 +59,8 @@ class RenderHtmlTests(unittest.TestCase):
 
         self.assertEqual([png_size(slide["image"]) for slide in slides], [(800, 450)] * 4)
         title, cards, final, scaled = (slide["metrics"] for slide in slides)
-        # A fractional line height must not change the measured 12px.
+        # A fractional line height must not change the measured 12px, and deck CSS aimed at spans
+        # or at everything inside the title must not change the measured 72px.
         self.assertEqual((title["chars"], title["min_font_px"], title["max_font_px"], title["max_font_text"]),
                          (9, 12, 72, "메시지 하나"))
         self.assertEqual((cards["chars"], cards["boxes"], cards["items"], cards["units"]), (6, 2, 3, 5))

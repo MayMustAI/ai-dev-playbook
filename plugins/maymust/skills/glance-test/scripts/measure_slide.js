@@ -24,8 +24,11 @@
       const matrix = el.getScreenCTM();
       px = parseFloat(getComputedStyle(el).fontSize) * (matrix ? Math.hypot(matrix.c, matrix.d) : 1);
     } else {
-      const probe = document.createElement("span");
-      probe.style.cssText = "display:inline-block;width:0;height:1em;margin:0;padding:0;border:0";
+      // A tag no deck CSS targets, with every property reset, so only the inherited font size
+      // and the ancestors' zoom and transforms decide its height.
+      const probe = document.createElement("glance-probe");
+      probe.style.cssText = "all: initial !important; display: inline-block !important; " +
+        "width: 0 !important; height: 1em !important; font-size: inherit !important; zoom: 1 !important";
       el.appendChild(probe);
       px = probe.getBoundingClientRect().height;
       probe.remove();
