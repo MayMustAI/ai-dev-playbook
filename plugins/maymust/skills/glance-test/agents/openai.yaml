@@ -1,0 +1,6 @@
+interface:
+  display_name: "MayMust Glance Test"
+  short_description: "발표 슬라이드가 3초 안에 핵심이 읽히는지 장별로 점검"
+  default_prompt: "이 발표 덱이 글랜스 테스트를 통과하는지 MayMust 방식으로 점검해줘."
+policy:
+  allow_implicit_invocation: false

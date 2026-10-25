@@ -13,7 +13,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `.agents/plugins/marketplace.json` | Codex 마켓플레이스 정의 |
 | `plugins/maymust/.claude-plugin/plugin.json` | Claude Code용 `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/.codex-plugin/plugin.json` | Codex용 `maymust` 플러그인 매니페스트 |
-| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 분석 스킬 4개(pstack에서 이식) + 공통 지침 1개 + 외부 스킬 6개 |
+| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 분석 스킬 4개(pstack에서 이식) + 발표 점검 1개 + 공통 지침 1개 + 외부 스킬 6개 |
 | `plugins/maymust/hooks/` | 세션 시작 공통 지침 주입 및 Claude/Codex별 보호 브랜치 가드 |
 | `plugins/maymust/third-party/` | 외부 스킬의 고정 commit·파일 hash·원본 라이선스 |
 | `plugins/independent-review/` | 범용 독립 리뷰 플러그인 (`claude-review`, `loop-review`) |
@@ -43,6 +43,12 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:why`](plugins/maymust/skills/why/SKILL.md) | 코드가 왜 이렇게 만들어졌는지 git·PR·Linear·Notion·Slack 근거를 출처별로 읽기 전용 조사. 확인된 사실과 추론을 구분. 명시 호출 전용 |
 
 같은 출처에서 self-review·codex 리뷰어의 테스트 판정 기준("동작을 깨면 실패하고 내부만 바꾸면 통과하는가")과 worklog의 근거 기록 규칙도 가져왔습니다. pstack의 PR·머지·자율 실행·워크트리 정리 단계는 팀의 PR·리뷰·머지 절차와 충돌하므로 가져오지 않았습니다.
+
+## 발표 자료 점검
+
+| 호출 | 역할 |
+| --- | --- |
+| [`/maymust:glance-test`](plugins/maymust/skills/glance-test/SKILL.md) | 발표 슬라이드가 3초 안에 핵심 메시지 하나를 전하는지 장별로 점검(글랜스 테스트). 덱을 발표 크기 이미지로 렌더링하고, 내용을 모르는 검토자의 판독을 의도와 대조해 실패 원인과 고칠 방향을 보고. 명시 호출 전용 |
 
 ## 공통 작업 지침
 
