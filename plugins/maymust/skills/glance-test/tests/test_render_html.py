@@ -44,13 +44,19 @@ class RenderHtmlTests(unittest.TestCase):
     def test_stacked_slides_are_measured_in_their_final_visible_state(self):
         deck = self.page("deck.html", """
             <section><h1>메시지 하나</h1><p class="note">작은 각주</p></section>
-            <section><div class="card">하나</div><div class="card">둘</div><ul><li>가</li><li>나</li><li>다</li></ul></section>
+            <section><div class="card">하나</div><div class="card">둘</div><ul><li>가</li><li>나</li><li>다</li></ul>
+              <table><tr><td>A</td><td>B</td></tr><tr><td>C</td><td>D</td></tr></table>
+              <div style="height: 0; overflow: hidden"><div class="card">접힘</div></div>
+              <span style="position: absolute; width: 1px; height: 1px; overflow: hidden">스크린리더</span>
+              <div style="position: relative"><div style="height: 0; overflow: hidden">
+                <p style="position: absolute; top: 0; margin: 0">탈출</p></div></div></section>
             <section><div class="half"><p style="font-size: 40px">절반</p></div>
               <p class="fade">나중에 보임</p><p style="visibility: hidden">숨김</p></section>
             <section><svg width="200" height="100" viewBox="0 0 800 400"><text y="60" font-size="40">도표</text></svg>
               <div style="zoom: 1.5"><p style="font-size: 20px">확대</p></div></section>""", """
             section { height: 100vh; overflow: hidden; }
             h1 { font-size: 72px; } .note { font-size: 12px; line-height: 1.2; } .card { background: #eee; }
+            td { border: 1px solid #999; }
             span { font-size: 12px; } h1 * { font-size: 8px !important; max-height: 2px !important; zoom: 3 !important; }
             .half { transform: scale(0.5); transform-origin: top left; }
             .fade { font-size: 24px; opacity: 0; animation: fade 30s forwards; }
@@ -63,7 +69,10 @@ class RenderHtmlTests(unittest.TestCase):
         # or at everything inside the title must not change the measured 72px.
         self.assertEqual((title["chars"], title["min_font_px"], title["max_font_px"], title["max_font_text"]),
                          (9, 12, 72, "메시지 하나"))
-        self.assertEqual((cards["chars"], cards["boxes"], cards["items"], cards["units"]), (6, 2, 3, 5))
+        # Bordered table cells count once per row. Text and cards clipped away (a collapsed panel,
+        # screen-reader-only text) are not counted; an absolute box escaping a clipping wrapper
+        # that is not its containing block is.
+        self.assertEqual((cards["chars"], cards["boxes"], cards["items"], cards["units"]), (12, 2, 5, 7))
         # The 40px text is drawn at half size, the faded-in line counts, the hidden one does not.
         self.assertEqual((final["chars"], final["min_font_px"], final["max_font_px"]), (7, 20, 24))
         # SVG text drawn at a quarter of 40px, and 20px text under CSS zoom 1.5.

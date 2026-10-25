@@ -14,8 +14,32 @@
     return value;
   };
   const shown = (el) => getComputedStyle(el).visibility === "visible" && opacity(el) >= 0.1;
-  const onScreen = (rect) => rect.width > 0 && rect.height > 0 &&
-    rect.right > 0 && rect.bottom > 0 && rect.left < vw && rect.top < vh;
+  // Whether some of rect survives the viewport and every ancestor that clips it, starting at
+  // `from` for a box positioned as `position`. Overflow other than visible clips descendants;
+  // absolutely positioned boxes escape non-positioned ancestors, and fixed boxes escape all
+  // but transformed ones. Scrolling on html and body is the viewport itself. A sliver of 1px
+  // or less, such as screen-reader-only text, does not count.
+  const survives = (rect, from, position) => {
+    let left = Math.max(rect.left, 0);
+    let top = Math.max(rect.top, 0);
+    let right = Math.min(rect.right, vw);
+    let bottom = Math.min(rect.bottom, vh);
+    for (let node = from; node && node !== document.body && node !== document.documentElement;
+         node = node.parentElement) {
+      const style = getComputedStyle(node);
+      if (position === "absolute" && style.position === "static" && style.transform === "none") continue;
+      if (position === "fixed" && style.transform === "none") continue;
+      if (style.overflowX !== "visible" || style.overflowY !== "visible") {
+        const box = node.getBoundingClientRect();
+        left = Math.max(left, box.left);
+        top = Math.max(top, box.top);
+        right = Math.min(right, box.right);
+        bottom = Math.min(bottom, box.bottom);
+      }
+      position = style.position;
+    }
+    return right - left > 1 && bottom - top > 1;
+  };
   // Font size on the presentation screen, after CSS zoom and transforms: the drawn height of a
   // 1em probe inside the element. SVG text cannot hold the probe, so use its screen transform.
   const renderedFontPx = (el) => {
@@ -59,7 +83,7 @@
     if (!text || !el || !shown(el)) continue;
     const range = document.createRange();
     range.selectNodeContents(node);
-    if (![...range.getClientRects()].some(onScreen)) continue;
+    if (![...range.getClientRects()].some((rect) => survives(rect, el, "static"))) continue;
     chars += [...text].length;
     const font = renderedFontPx(el);
     if (minFont === null || font < minFont) minFont = font;
@@ -70,12 +94,15 @@
   }
 
   // Visual units: outermost boxed elements (cards, panels, code blocks) smaller than half
-  // the screen, plus list items and table rows. A rough count, not a rule.
+  // the screen, plus list items and table rows. Items, rows, and table cells are never counted
+  // as boxes, so a bordered table counts once per row. A rough count, not a rule.
   const visible = (el) => {
     const rect = el.getBoundingClientRect();
-    return onScreen(rect) && shown(el) && hasText(el) ? rect : null;
+    return shown(el) && hasText(el) &&
+      survives(rect, el.parentElement, getComputedStyle(el).position) ? rect : null;
   };
   const candidates = [...document.body.querySelectorAll("*")].filter((el) => {
+    if (el.matches("li, tr, td, th")) return false;
     const rect = visible(el);
     return rect && rect.width * rect.height < 0.5 * vw * vh && boxed(getComputedStyle(el));
   });
