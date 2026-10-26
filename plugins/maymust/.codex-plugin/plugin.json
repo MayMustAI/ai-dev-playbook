@@ -1,7 +1,7 @@
 {
   "name": "maymust",
-  "version": "0.9.2",
-  "description": "MayMust 팀 공용 작업 지침과 commit · PR · merge · worklog · 독립 리뷰 · 영향 범위 · 성능 검증 · 코드 조사 · 발표 슬라이드 점검. Attention Span, Karpathy Guidelines, 완료 전 검증과 pstack에서 이식한 분석 스킬을 함께 배포",
+  "version": "0.10.0",
+  "description": "MayMust 팀 공용 작업 지침과 commit · PR · merge · 독립 리뷰 · 영향 범위 · 성능 검증 · 코드 조사 · 발표 슬라이드 점검. Attention Span, Karpathy Guidelines, 완료 전 검증과 pstack에서 이식한 분석 스킬을 함께 배포",
   "author": {
     "name": "MayMust",
     "url": "https://github.com/MayMustAI"
@@ -15,7 +15,6 @@
     "git",
     "pull-request",
     "merge",
-    "worklog",
     "review"
   ],
   "skills": "./skills/",
@@ -23,7 +22,7 @@
   "interface": {
     "displayName": "MayMust AI Dev Playbook",
     "shortDescription": "MayMust 팀 개발 컨벤션을 Codex 스킬로 실행",
-    "longDescription": "팀 커밋, PR, 작업 로그, 읽기 전용 독립 리뷰와 현재 PR head에 연결된 머지 게이트를 제공합니다. Claude Code와 Codex가 같은 skills 디렉터리를 공유합니다. 세션 시작 훅으로 간결한 응답·최소 변경·완료 전 검증의 공통 지침을 전달합니다. pstack에서 이식한 영향 범위 점검, 성능 수치 검증, 코드 동작·설계 이유 조사 스킬을 함께 제공합니다. 발표 슬라이드가 3초 안에 핵심을 전하는지 점검하는 글랜스 테스트 스킬도 제공합니다.",
+    "longDescription": "팀 커밋, PR, 읽기 전용 독립 리뷰와 현재 PR head에 연결된 머지 게이트를 제공합니다. Claude Code와 Codex가 같은 skills 디렉터리를 공유합니다. 세션 시작 훅으로 간결한 응답·최소 변경·완료 전 검증의 공통 지침을 전달합니다. pstack에서 이식한 영향 범위 점검, 성능 수치 검증, 코드 동작·설계 이유 조사 스킬을 함께 제공합니다. 발표 슬라이드가 3초 안에 핵심을 전하는지 점검하는 글랜스 테스트 스킬도 제공합니다.",
     "developerName": "MayMust",
     "category": "Coding",
     "capabilities": [

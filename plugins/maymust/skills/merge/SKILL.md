@@ -124,7 +124,7 @@ printf '%s\n' "$MERGE_TITLE" | rg -q \
 - `## Screenshots` ~ 다음 `##` 헤딩 직전까지
 
 **유지되는 섹션** (git log 에 영구 남을 가치 있는 것):
-- `## Why`, `## What changed`, `## Design decisions`, `## Review focus`, `## Out of scope / Follow-up`, `## Worklog`, 상단 배지(🚨/⚠️/🔒)
+- `## Why`, `## What changed`, `## Design decisions`, `## Review focus`, `## Out of scope / Follow-up`, 상단 배지(🚨/⚠️/🔒)
 
 **스트립 이유**: 체크박스·스크린샷은 PR 시점의 휘발성 증거. git log 는 영구 기록이라 "왜/무엇/설계 판단" 만 가치 있음. 5단계 루프 통과 여부는 PR 페이지에서 언제든 확인 가능.
 
@@ -213,8 +213,6 @@ PR #42 머지 준비 · feat(plugin): squash 제목 컨벤션 강제 (#42)
 ...
 ## What changed
 ...
-## Worklog
-.worklogs/2026-04-22-merge-skill.md
 ---
 
 머지 진행하시겠습니까? (y/n)

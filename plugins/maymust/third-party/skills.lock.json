@@ -126,7 +126,7 @@
           "upstream_path": "pstack/skills/show-me-your-work/SKILL.md",
           "upstream_sha256": "920a8217cbb62f92a2222fb81fc9eab17ecd554a0277e444a95a927195139bd1",
           "used_in": [
-            "skills/worklog/SKILL.md"
+            "skills/pull-request/SKILL.md"
           ]
         },
         {
