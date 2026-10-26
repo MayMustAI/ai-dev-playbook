@@ -43,4 +43,4 @@ disable-model-invocation: true
 
 - 왜 이렇게 만들어졌는지 궁금하면 `/maymust:why`
 - 이 이해를 바탕으로 코드를 바꾸기 전에 영향이 넓어 보이면 `/maymust:blast-radius`
-- 설명에서 얻은 결정이나 주의점은 `/maymust:worklog log`로 근거와 함께 남긴다
+- 설명에서 얻은 결정이나 주의점이 변경으로 이어지면 PR 본문 `## Design decisions`에 근거와 함께 남긴다(`/maymust:pull-request`)

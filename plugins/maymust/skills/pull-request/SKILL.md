@@ -61,9 +61,10 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 - Infra: <1줄 요약>
 
 ## Design decisions
-- <선택 A (vs 고려한 B)>: <이유> — 리뷰어는 이 이유가 성립하는지 체크
+- <선택 A (vs 고려한 B)>: <이유> · 근거: <커밋 SHA / `file:line` / 실행한 명령과 결과, 없으면 `근거 없음`> — 리뷰어는 이 이유가 성립하는지 체크
 - 불변식: <지켜야 할 규칙. 예: "cache key 에 regionID 필수">
 - 안전 근거: <변경이 안전한 이유가 되는 사실> (확신 단계: <위치 / 불가능 증명 / 실행 / 재현>) — `/maymust:blast-radius`를 실행한 경우
+- 정정: <리뷰 중 뒤집힌 판단 — 바꾼 이유 · 근거> — 해당 시만
 
 ## Review focus
 - 🔍 주로 봐주세요: <위험 지점 / 설계 판단 지점 — 파일·함수 단위>
@@ -84,9 +85,6 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 - [x] 3. 다른 LLM PR 리뷰 — <모델명> · <피드백 요지>
 - [x] 4. 피드백 선별 — 수용 N, 거절 N (<거절 이유>)
 - [x] 5. Playwright — <테스트 파일 경로> 또는 N/A (<사유: 백엔드 전용 등>)
-
-## Worklog
-<링크 또는 3–5줄 요약>
 ```
 
 ### 소형 템플릿
@@ -104,10 +102,14 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 - [x] 3. LLM 리뷰 — <모델> · <요지>
 - [ ] 4. 피드백 없었음
 - [x] 5. N/A — <사유>
-
-## Worklog
-<링크>
 ```
+
+### Design decisions 근거 규칙
+
+- 판단마다 근거를 같은 줄에 포인터로 붙인다: 커밋 SHA, PR 번호, `file:line`, 실행한 명령과 결과, 로그·스크린샷 경로. 설명 문단으로 대신하지 않는다
+- 근거가 없으면 `근거 없음`이라고 쓴다. 리뷰어가 직접 확인해야 할 판단이 드러난다
+- 리뷰를 거치며 판단이 뒤집히면 원래 줄을 지우지 않고 바로 아래에 `정정:` 줄을 더해 바꾼 이유와 근거를 적는다
+- 이 섹션은 squash 본문에 남는다. 나중에 `/maymust:why`가 "왜 이렇게 만들었나"를 조사할 때 읽는 기록이다
 
 ## 상단 배지 기준
 
@@ -144,7 +146,7 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
      - "4. 받은 피드백 중 수용 / 거절 갯수, 거절 이유는?"
      - "5. Playwright 테스트 — 경로 또는 N/A 사유?"
    - 답 없는 단계는 **`[ ]` + "미수행: <이유>"** 로 기록. 절대 `[x]` 로 가짜 통과 처리 금지
-8. **Worklog 링크 물어봄** — 없으면 인라인 3–5줄 요약 유도
+8. **Design decisions 근거 확인** — 판단마다 근거 포인터가 붙었는지 본다. diff·커밋·대화에서 찾지 못하면 사용자에게 묻고, 그래도 없으면 `근거 없음`으로 적는다
 9. **Review focus · Out of scope 확인** — 중대형이면 사용자가 직접 채워야 의미 있음. 스킬이 후보를 diff 에서 추천
    - 공용 함수·데이터 형식·설정·여러 모듈을 바꾸는 변경이면 PR 생성 전에 `/maymust:blast-radius` 실행을 제안한다. 안전 근거와 확신 단계는 `## Design decisions`에, 확인된 위험은 `## Review focus`에 옮기고, 비공개 정보는 옮기지 않는다
    - 성능 수치를 본문에 쓰면 `/maymust:benchmark-checklist`로 먼저 검증하고, 대표 수치 하나(단위, 전후, 실행 횟수)만 쓴다
@@ -162,7 +164,7 @@ description: MayMust 팀 컨벤션으로 Pull Request를 생성. 브랜치 변�
 - ❌ `Co-Authored-By` 추가 (글로벌 정책)
 - ❌ 제목에 `(#N)` 수동 첨부
 - ❌ 베이스를 `main` 으로 (릴리즈 PR 이라고 명시된 경우만 예외)
-- ❌ Worklog 섹션 자체 생략 (링크가 없으면 인라인 요약이라도 남김)
+- ❌ Design decisions 에 근거 없이 판단만 쓰기 (근거가 없으면 `근거 없음`)
 - ❌ "변경사항을 모두 diff 에서 열거" — PR 본문을 diff 재탕으로 만들면 AI·사람 둘 다 못 읽음
 - ❌ UI 변경에 스크린샷 없이 ready 로 올리기
 
@@ -192,9 +194,6 @@ process liveness 관점에서 /healthz 는 tenant 무관해야 함. per-tenant
 - [ ] 3. LLM 리뷰 — 건너뜀 (1파일 1함수 트리비얼)
 - [ ] 4. 피드백 없음
 - [x] 5. N/A — 백엔드 핸들러
-
-## Worklog
-작업 1시간. 배포 직후 알람으로 탐지 → fix → 재배포.
 ```
 
 ### 대형 — 리팩터 + 신규 기능
@@ -220,8 +219,10 @@ process liveness 관점에서 /healthz 는 tenant 무관해야 함. per-tenant
 
 ## Design decisions
 - **tenantRuntime 단일 struct** (vs 3 parallel map): clone/sync 경로 줄이고 atomic
-  교체 쉬움 → 리뷰어는 applyTenantSettings 의 swap 지점이 lock-free 인지 체크
+  교체 쉬움 · 근거: `tenant_runtime.go:88` 의 단일 swap
+  → 리뷰어는 applyTenantSettings 의 swap 지점이 lock-free 인지 체크
 - **알림 키 = (tenant_id, user_id) 페어**: user_id 단독은 cross-tenant 충돌 가능
+  · 근거: `go test ./notify -run TestCrossTenantKey` 가 user_id 단독 키에서 실패
   → 리뷰어는 모든 notify 조회 경로에서 tenant_id 가 포함되는지 체크
 - **불변식**: response mask · in-memory clone · response shape 세 경로 모두 구조체
   필드 동기화 필요. 하나라도 누락되면 round-trip 에서 필드 소실
@@ -249,7 +250,4 @@ process liveness 관점에서 /healthz 는 tenant 무관해야 함. per-tenant
 - [x] 3. LLM 리뷰 — codex · round-trip + 런타임 격리 + 캐시 격리 블로커 지적
 - [x] 4. 피드백 선별 — 3개 전부 수용
 - [ ] 5. Playwright — 미작성, 이후 PR 에서 추가. 수동 검증 증거는 1번에 기록
-
-## Worklog
-총 3일. day1: tenant runtime · day2: 알림 채널 · day3: 리뷰 반영 + 가드 확장.
 ```
