@@ -3,7 +3,7 @@
 이 문서는 플레이북을 설치하고, 매일의 작업에서 스킬을 쓰고, 문제가 생겼을 때 스스로 해결하는 방법을 정리합니다. 저장소 개요와 스킬 목록은 [README](../README.md)에 있습니다.
 
 - **대상**: 플레이북을 쓰는 팀원, 릴리즈를 맡는 관리자, 스킬을 고치는 개발자
-- **기준 버전**: maymust 0.9.1
+- **기준 버전**: maymust 0.10.0
 
 ## 목차
 
@@ -141,16 +141,14 @@ Claude에서는 같은 이름의 output style(Attention-kind, Spartan, Rundown)�
 ## 4. 일하는 흐름
 
 ```
-1. /maymust:worklog            ← 작업 시작, worklog 생성
+1. git switch -c <branch>      ← 작업 브랜치 생성 (base: origin/dev)
    /maymust:how · /maymust:why ← (필요할 때) 코드 동작과 설계 이유 조사
    (작업 진행)
-   /maymust:worklog log "..."  ← 중간 로그 (판단에는 근거를 함께)
-   /maymust:commit [wip]       ← 중간 커밋
+   /maymust:commit [wip]       ← 중간 커밋 (방향을 바꾼 판단은 본문에 이유를)
    /maymust:benchmark-checklist ← (성능 수치를 다룰 때) 측정 검증
    ...
-2. /maymust:worklog finish     ← 작업 종료, PR 본문 요약 생성
-   /maymust:blast-radius       ← (영향이 넓은 변경) 영향 범위 점검과 안전 근거 증명
-3. /maymust:pull-request       ← 검증 상태를 솔직하게 기록하여 PR 생성; 미완료 UI 증거는 draft
+2. /maymust:blast-radius       ← (영향이 넓은 변경) 영향 범위 점검과 안전 근거 증명
+3. /maymust:pull-request       ← 설계 판단은 근거와 함께, 검증 상태는 솔직하게 기록하여 PR 생성; 미완료 UI 증거는 draft
 4. /maymust:self-review        ← (/clear 후 권장) PR의 의도와 구현 리뷰
 5. /maymust:codex-review <PR>  ← 독립 리뷰·수정 루프, 현재 head에 통과 마커 생성
 6. (동료 리뷰 — 사람)
@@ -158,11 +156,10 @@ Claude에서는 같은 이름의 output style(Attention-kind, Spartan, Rundown)�
 8. (릴리즈) dev → main PR      ← /maymust:pull-request(base main) → /maymust:merge(merge commit, dev 보존) → 팀원 업데이트
 ```
 
-### 4.1 브랜치와 worklog
+### 4.1 브랜치
 
 - `dev`에서 작업 브랜치를 만듭니다. 예: `git switch -c feature/<slug> origin/dev`
 - `dev`나 `main`에서 직접 커밋하려 하면 확인 창이 뜹니다. 긴급 hotfix처럼 의도한 경우가 아니면 작업 브랜치를 씁니다.
-- `/maymust:worklog`로 작업 기록을 시작합니다. `.worklogs/<날짜>-<브랜치>.md`가 생기고, 작업 PR이 `dev`에 squash 머지될 때 함께 들어갑니다.
 
 ### 4.2 조사
 
@@ -174,7 +171,7 @@ Claude에서는 같은 이름의 output style(Attention-kind, Spartan, Rundown)�
 
 - 요청 범위 안에서 최소한으로 바꿉니다. 관련 없는 dead code나 주석은 고치지 않고 언급만 합니다.
 - 중간 저장은 `/maymust:commit wip`, 리뷰받을 단위는 `/maymust:commit`(meaningful)으로 커밋합니다.
-- 방향을 바꾸거나 되돌린 판단은 `/maymust:worklog log "..."`로 근거와 함께 남깁니다.
+- 방향을 바꾸거나 되돌린 판단은 커밋 본문에 이유를 적어 두고, PR을 만들 때 `## Design decisions`에 근거와 함께 옮깁니다.
 
 ### 4.4 검증
 
@@ -183,9 +180,8 @@ Claude에서는 같은 이름의 output style(Attention-kind, Spartan, Rundown)�
 
 ### 4.5 PR
 
-1. `/maymust:worklog finish`로 작업 기록을 완료 처리하고 PR 본문용 요약을 받습니다.
-2. 공용 함수, 데이터 형식, 설정, 여러 모듈을 바꾸는 변경이면 `/maymust:blast-radius`로 영향 범위를 점검합니다.
-3. `/maymust:pull-request`로 `dev` 대상 PR을 만듭니다. 5단계 루프 체크박스에는 실제로 한 것만 `[x]`로 표시합니다.
+1. 공용 함수, 데이터 형식, 설정, 여러 모듈을 바꾸는 변경이면 `/maymust:blast-radius`로 영향 범위를 점검합니다.
+2. `/maymust:pull-request`로 `dev` 대상 PR을 만듭니다. 5단계 루프 체크박스에는 실제로 한 것만 `[x]`로 표시합니다.
 
 ### 4.6 리뷰
 
@@ -210,17 +206,11 @@ Claude에서는 `/maymust:<스킬>`, Codex에서는 `$maymust:<스킬>`로 호�
 - **하는 일**: diff를 읽고 `<type>(<scope>): <한글 설명>` 제목과 한글 본문(왜·어떻게·검증)을 제안한 뒤, 확인을 받아 커밋합니다. meaningful 본문에는 검증 섹션이 필수이고, 하지 않은 검증은 미실시로 적습니다.
 - **주의**: `dev`·`main`에서는 경고 후 명시적인 확답이 있어야 진행합니다. `git add .` 자동 실행, `--no-verify`, `Co-Authored-By`, `(#N)` 수동 추가는 금지입니다.
 
-#### `worklog`
-
-- **호출**: `/maymust:worklog`(열기·생성), `new "<작업>"`, `log "<메시지>"`, `finish`
-- **파일**: `.worklogs/<YYYY-MM-DD>-<브랜치>.md`. 섹션은 무엇/왜(필수), 진행 로그, 막혔던 것, 결정 노트, 후속입니다.
-- **근거 규칙**: 판단을 기록할 때는 근거(커밋 SHA, PR 번호, `file:line`, 실행한 명령과 결과)를 같은 줄에 붙입니다. 틀린 판단은 지우지 않고 새 줄로 정정합니다.
-- **finish**: 상태를 `complete`로 바꾸고 PR 본문용 3~5줄 요약을 만듭니다.
-
 #### `pull-request`
 
 - **호출**: `/maymust:pull-request`
-- **하는 일**: base(기본 `dev`) 대비 브랜치 전체 변경을 읽고, 규모(소형·중형·대형)에 맞는 본문을 만듭니다. 섹션은 Why, What changed, Design decisions, Review focus, Screenshots, Out of scope / Follow-up, Self-verification, Worklog입니다.
+- **하는 일**: base(기본 `dev`) 대비 브랜치 전체 변경을 읽고, 규모(소형·중형·대형)에 맞는 본문을 만듭니다. 섹션은 Why, What changed, Design decisions, Review focus, Screenshots, Out of scope / Follow-up, Self-verification입니다.
+- **근거 규칙**: Design decisions의 판단마다 근거(커밋 SHA, PR 번호, `file:line`, 실행한 명령과 결과)를 같은 줄에 붙이고, 없으면 `근거 없음`이라고 씁니다. 리뷰 중 뒤집힌 판단은 지우지 않고 `정정:` 줄로 남깁니다.
 - **5단계 루프**: 직접 테스트, 셀프 리뷰, 다른 LLM 리뷰, 피드백 선별, Playwright. 하지 않은 단계는 `[ ] 미수행: <이유>`로 적습니다.
 - **주의**: `main` 대상은 릴리즈 PR만 허용합니다. UI 변경을 스크린샷 없이 ready로 올리지 않습니다. 영향이 넓은 변경은 blast-radius 결과를, 성능 수치는 benchmark-checklist로 검증한 대표 수치 하나를 넣습니다.
 

@@ -1,11 +1,11 @@
 {
   "name": "maymust",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "author": {
     "name": "MayMust",
     "url": "https://github.com/MayMustAI"
   },
-  "description": "MayMust 팀 공용 작업 지침과 커밋·PR·worklog·독립 리뷰·현재 PR head의 머지 게이트·영향 범위·성능 수치 검증·코드 조사·발표 슬라이드 점검",
+  "description": "MayMust 팀 공용 작업 지침과 커밋·PR·독립 리뷰·현재 PR head의 머지 게이트·영향 범위·성능 수치 검증·코드 조사·발표 슬라이드 점검",
   "license": "MIT AND AGPL-3.0",
   "outputStyles": "./output-styles/"
 }

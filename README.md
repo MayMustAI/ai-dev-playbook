@@ -26,7 +26,6 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:commit`](plugins/maymust/skills/commit/SKILL.md) | 스테이지된 변경을 팀 컨벤션(Conventional Commits · 한글 본문) 으로 커밋. `meaningful` / `wip` 2 모드 |
 | [`/maymust:pull-request`](plugins/maymust/skills/pull-request/SKILL.md) | 듀얼 오디언스(사람 30초 스캔 + AI claim 검증) 구조의 PR 생성. 5단계 루프 대화형 확인 |
 | [`/maymust:merge`](plugins/maymust/skills/merge/SKILL.md) | 작업 PR은 squash, 장기 브랜치끼리 합치는 통합 PR은 merge commit으로 판정해 머지 + 게이트(작성자·리뷰·mergeable·CI·명사형 제목). `(#PR)` 접미사와 Self-verification/Screenshots 스트립을 강제하고, 머지 후 base 동기화·작업 브랜치 정리(장기 브랜치는 보존) |
-| [`/maymust:worklog`](plugins/maymust/skills/worklog/SKILL.md) | 작업당 한 장 worklog. `.worklogs/<date>-<branch>.md` 로 feature 브랜치에 커밋 → squash 머지 시 `dev` 에 함께 축적 |
 | [`/maymust:self-review`](plugins/maymust/skills/self-review/SKILL.md) | 5단계 루프 step 2. PR 본문의 의도(Why/Design decisions) vs 구현(diff) 매칭 렌즈로 구조화 리뷰. 세션 편향 경고 내장 |
 | [`/maymust:codex-review`](plugins/maymust/skills/codex-review/SKILL.md) | 새 읽기 전용 Codex 세션의 리뷰·최소 수정·재리뷰 루프. PR 통과 시 실제 리뷰한 head SHA에 연결된 마커 생성 |
 | [`/maymust:merge-loop-review-gate`](plugins/maymust/skills/merge-loop-review-gate/SKILL.md) | 머지 전 현재 PR head의 독립 리뷰 통과 마커를 확인. 누락·오래된 마커는 머지 차단. 이미 리뷰된 커밋만 담긴 통합 PR은 사용자 승인으로 면제 |
@@ -42,7 +41,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:how`](plugins/maymust/skills/how/SKILL.md) | 코드·서브시스템 동작을 관점별로 탐색해 설명. 서브에이전트를 여러 개 띄우므로 명시 호출 전용 |
 | [`/maymust:why`](plugins/maymust/skills/why/SKILL.md) | 코드가 왜 이렇게 만들어졌는지 git·PR·Linear·Notion·Slack 근거를 출처별로 읽기 전용 조사. 확인된 사실과 추론을 구분. 명시 호출 전용 |
 
-같은 출처에서 self-review·codex 리뷰어의 테스트 판정 기준("동작을 깨면 실패하고 내부만 바꾸면 통과하는가")과 worklog의 근거 기록 규칙도 가져왔습니다. pstack의 PR·머지·자율 실행·워크트리 정리 단계는 팀의 PR·리뷰·머지 절차와 충돌하므로 가져오지 않았습니다.
+같은 출처에서 self-review·codex 리뷰어의 테스트 판정 기준("동작을 깨면 실패하고 내부만 바꾸면 통과하는가")과 PR 본문 Design decisions의 근거 기록 규칙도 가져왔습니다. pstack의 PR·머지·자율 실행·워크트리 정리 단계는 팀의 PR·리뷰·머지 절차와 충돌하므로 가져오지 않았습니다.
 
 ## 발표 자료 점검
 
@@ -89,16 +88,14 @@ Claude Code CLI·Desktop Code 탭·Codex에서 작동하고, Desktop의 Chat 탭
 ## 일하는 흐름 (스킬이 엮이는 방식)
 
 ```
-1. /maymust:worklog            ← 작업 시작, worklog 생성
+1. git switch -c <branch>      ← 작업 브랜치 생성 (base: origin/dev)
    /maymust:how · /maymust:why ← (필요할 때) 코드 동작과 설계 이유 조사
    (작업 진행)
-   /maymust:worklog log "..."  ← 중간 로그 (판단에는 근거를 함께)
-   /maymust:commit [wip]       ← 중간 커밋
+   /maymust:commit [wip]       ← 중간 커밋 (방향을 바꾼 판단은 본문에 이유를)
    /maymust:benchmark-checklist ← (성능 수치를 다룰 때) 측정 검증
    ...
-2. /maymust:worklog finish     ← 작업 종료, PR 본문 요약 생성
-   /maymust:blast-radius       ← (영향이 넓은 변경) 영향 범위 점검과 안전 근거 증명
-3. /maymust:pull-request       ← 검증 상태를 솔직하게 기록하여 PR 생성; 미완료 UI 증거는 draft
+2. /maymust:blast-radius       ← (영향이 넓은 변경) 영향 범위 점검과 안전 근거 증명
+3. /maymust:pull-request       ← 설계 판단은 근거와 함께, 검증 상태는 솔직하게 기록하여 PR 생성; 미완료 UI 증거는 draft
 4. /maymust:self-review        ← (/clear 후 권장) PR의 의도와 구현 리뷰
 5. /maymust:codex-review <PR>  ← 독립 리뷰·수정 루프, 현재 head에 통과 마커 생성
 6. (동료 리뷰 — 사람)
