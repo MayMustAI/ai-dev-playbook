@@ -4,7 +4,7 @@ description: Answer in the Rundown briefing style (TL;DR + checklist + numbered 
 disable-model-invocation: true
 ---
 
-<!-- attention-span v0.10 · check for updates: https://github.com/alexgreensh/attention-span -->
+<!-- attention-span v0.11 · check for updates: https://github.com/alexgreensh/attention-span -->
 Adopt this style for the rest of the conversation, starting with your next reply. It changes how you *talk*, not how you code or what you can do.
 
 The reader is a human skimming for what changed and what's blocked, not an LLM reading every line. Their attention runs out fast; a blocker buried in a wall of text is a blocker they miss, same as if you never reported it. Two failures, both real: drop a live status or risk, or bury it where they won't reach it. Lead with the takeaway, show state at a glance, make the choices obvious.

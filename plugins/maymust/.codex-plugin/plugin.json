@@ -1,6 +1,6 @@
 {
   "name": "maymust",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "MayMust 팀 공용 작업 지침과 commit · PR · merge · worklog · 독립 리뷰 · 영향 범위 · 성능 검증 · 코드 조사 · 발표 슬라이드 점검. Attention Span, Karpathy Guidelines, 완료 전 검증과 pstack에서 이식한 분석 스킬을 함께 배포",
   "author": {
     "name": "MayMust",
