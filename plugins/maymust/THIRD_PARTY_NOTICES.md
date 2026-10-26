@@ -1,6 +1,6 @@
 # Bundled third-party instructions
 
-MayMust 0.9.1 distributes the files below at fixed upstream commits. Installation
+MayMust 0.9.2 distributes the files below at fixed upstream commits. Installation
 does not download upstream `main` or run upstream installers. The complete list of
 copied files and their SHA-256 hashes is in [skills.lock.json](third-party/skills.lock.json).
 Copied instruction/style files are unchanged; MayMust runtime metadata lives beside
@@ -12,7 +12,7 @@ the shipped copy. See [Adapted material from pstack](#adapted-material-from-psta
 | Source | Pinned commit | Included material | Upstream license |
 | --- | --- | --- | --- |
 | [obra/superpowers](https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d) | `8ca22dba9a94f28898bbce59f2537ff4d87c747d` | Only `verification-before-completion/SKILL.md` | MIT |
-| [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/f4ae0de76ed3ab98fa9398a56f30bbfbaa146590) | `f4ae0de76ed3ab98fa9398a56f30bbfbaa146590` (0.10) | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles. Since upstream 0.9 they live under `plugins/attention-span/` | AGPL-3.0 |
+| [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/8a6e2250dbc1dfb1b4186e03a92484d8c799c1b0) | `8a6e2250dbc1dfb1b4186e03a92484d8c799c1b0` (0.11) | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles. Since upstream 0.9 they live under `plugins/attention-span/` | AGPL-3.0 |
 | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/tree/2c606141936f1eeef17fa3043a72095b4765b9c2) | `2c606141936f1eeef17fa3043a72095b4765b9c2` | `karpathy-guidelines/SKILL.md` | MIT (declared upstream) |
 | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/f2bad5225cb2d4f5e58b45aa36be89d16a558c13/pstack) | `f2bad5225cb2d4f5e58b45aa36be89d16a558c13` | `LICENSE` copied unchanged; methods from 17 files adapted into MayMust skills (below) | MIT |
 
