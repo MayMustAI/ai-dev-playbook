@@ -1,46 +1,21 @@
 ---
 name: how
-description: 코드나 서브시스템이 어떻게 동작하는지 관점별로 탐색하고, 처음 맡는 시니어 엔지니어가 바로 작업을 시작할 수 있는 수준으로 설명한다. 변경 전 코드 이해, 배치·소유·계층 질문("이건 어디에 있어야 해", "어느 모듈 책임이야")에 사용. 서브에이전트를 여러 개 띄울 수 있어 명시 호출 전용. "/how" 호출 시 사용.
+description: "Use for \"how does X work\", code walkthroughs before changing something, and placement / ownership / layering questions (\"where should this live\", \"which package owns this\", \"is this the right layer\"). Explains subsystem architecture, runtime flow, onboarding mental models. Use why for motivation."
 disable-model-invocation: true
 ---
 
-<!-- pstack(cursor/plugins@f2bad52, MIT) skills/how/SKILL.md를 MayMust 흐름에 맞게 수정해 이식. 출처: THIRD_PARTY_NOTICES.md -->
+# How
 
-# `/maymust:how` — 코드 동작 설명
+Explore the codebase to answer "how does X work?" questions.
 
-> 주석 달린 소스 코드처럼 읽힐 만큼 자세하지 않게, 그러나 그 영역에서 일을 시작할 수 있는 정신 모델이 생길 만큼 설명한다.
+If the scope is ambiguous, state your interpretation and explore. The user can redirect.
 
-## 호출 예
+## 1. Explain
 
-```
-/maymust:how 실행 취소는 어떻게 동작해?
-/maymust:how 결제 웹훅 처리 흐름 전체
-/maymust:how 이 검증 로직은 어느 모듈 책임이야?
-```
+Spawn one Task subagent with `subagent_type: generalPurpose` and `readonly: true` that explores and explains in one pass. Give it the user's question and this brief:
 
-## 실행 방식
+> You are writing an architectural explanation for a senior engineer. Explore the codebase and write an explanation that a senior engineer unfamiliar with this area could read and walk away with a solid mental model. They should understand the architecture well enough to start working in it confidently. You have read-only access to the codebase.
 
-- 서브에이전트를 쓸 수 있으면(예: Claude Code) 탐색자는 읽기 전용 서브에이전트(`Explore`)로, 설명자는 범용 서브에이전트로 띄운다. 모든 브리프에 "파일과 Git 상태를 바꾸지 말 것"을 적고, 끝나면 `git status`가 그대로인지 확인한다
-- 서브에이전트를 쓸 수 없으면(예: Codex) 같은 프롬프트의 절차를 현재 세션에서 순서대로 수행한다
-- 서브에이전트에게는 파일 내용을 붙여 넣지 말고 경로를 넘긴다
-- 프롬프트의 `{LANGUAGE}`에는 사용자의 질문 언어를 넣는다
+## 2. Present
 
-## 워크플로우
-
-1. **복잡도 판단** — 범위가 모호하면 해석을 한 줄로 밝히고 진행한다. 사용자가 방향을 바꿀 수 있다
-   - **단순**(모듈 하나, 작은 유틸리티, "함수 X는 어떻게 동작해" 같은 좁은 질문): 탐색자 없이 설명자 하나가 탐색과 설명을 함께 한다. [explainer-prompt.md](references/explainer-prompt.md)에서 "탐색 결과" 절을 빼고 쓴다. 4단계로 간다
-   - **복잡**(여러 파일·서비스에 걸친 서브시스템, 횡단 기능, 아키텍처 전반): 2단계로 간다
-   - 애매하면 단순 경로를 고른다
-2. **탐색(복잡한 경우만)** — 질문을 서로 겹치지 않는 2~4개 관점으로 나누고, 관점마다 [explorer-prompt.md](references/explorer-prompt.md)를 채워 탐색자를 한 번에 띄운다
-3. **종합(복잡한 경우만)** — 탐색자가 모두 돌아오면 [explainer-prompt.md](references/explainer-prompt.md)에 모든 탐색 결과를 채워 설명자 하나를 띄운다
-4. **전달** — 설명자의 결과를 전달한다. 대화 맥락을 반영한 가벼운 수정은 괜찮지만 내용을 크게 다시 쓰지 않는다
-
-## 출력 포맷
-
-[explainer-prompt.md](references/explainer-prompt.md)의 절을 쓰고, 해당 없는 절은 뺀다: 개요, 핵심 개념, 동작 방식, 코드 위치, 주의할 점.
-
-## 다른 스킬과의 연결
-
-- 왜 이렇게 만들어졌는지 궁금하면 `/maymust:why`
-- 이 이해를 바탕으로 코드를 바꾸기 전에 영향이 넓어 보이면 `/maymust:blast-radius`
-- 설명에서 얻은 결정이나 주의점이 변경으로 이어지면 PR 본문 `## Design decisions`에 근거와 함께 남긴다(`/maymust:pull-request`)
+Present the subagent's output. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.

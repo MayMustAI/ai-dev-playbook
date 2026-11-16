@@ -13,7 +13,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | `.agents/plugins/marketplace.json` | Codex 마켓플레이스 정의 |
 | `plugins/maymust/.claude-plugin/plugin.json` | Claude Code용 `maymust` 플러그인 매니페스트 |
 | `plugins/maymust/.codex-plugin/plugin.json` | Codex용 `maymust` 플러그인 매니페스트 |
-| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 분석 스킬 4개(pstack에서 이식) + 발표 점검 1개 + 공통 지침 1개 + 외부 스킬 6개 |
+| `plugins/maymust/skills/` | 팀 워크플로우 7개 + 분석 스킬 4개(pstack 원본 동기화) + 발표 점검 1개 + 공통 지침 1개 + 외부 스킬 6개 |
 | `plugins/maymust/hooks/` | 세션 시작 공통 지침 주입 및 Claude/Codex별 보호 브랜치 가드 |
 | `plugins/maymust/third-party/` | 외부 스킬의 고정 commit·파일 hash·원본 라이선스 |
 | `plugins/independent-review/` | 범용 독립 리뷰 플러그인 (`claude-review`, `loop-review`) |
@@ -30,16 +30,16 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 | [`/maymust:codex-review`](plugins/maymust/skills/codex-review/SKILL.md) | 새 읽기 전용 Codex 세션의 리뷰·최소 수정·재리뷰 루프. PR 통과 시 실제 리뷰한 head SHA에 연결된 마커 생성 |
 | [`/maymust:merge-loop-review-gate`](plugins/maymust/skills/merge-loop-review-gate/SKILL.md) | 머지 전 현재 PR head의 독립 리뷰 통과 마커를 확인. 누락·오래된 마커는 머지 차단. 이미 리뷰된 커밋만 담긴 통합 PR은 사용자 승인으로 면제 |
 
-## 분석 스킬 (pstack에서 이식)
+## 분석 스킬 (pstack 원본 동기화)
 
-[pstack](https://github.com/cursor/plugins/tree/main/pstack)의 방법론 중 팀 흐름과 충돌하지 않는 부분을 고정 commit 기준으로 옮겨 왔습니다. pstack 자체는 설치하지 않으며, Claude Code와 Codex에서 같은 스킬을 씁니다.
+[pstack](https://github.com/cursor/plugins/tree/main/pstack)의 선택한 스킬을 고정 commit 기준으로 가져오며, 독립 스킬 4개의 본문은 원본 그대로 유지합니다. pstack 자체는 설치하지 않으며, Claude Code와 Codex에서 같은 스킬을 씁니다.
 
 | 호출 | 역할 |
 | --- | --- |
 | [`/maymust:blast-radius`](plugins/maymust/skills/blast-radius/SKILL.md) | 변경이 diff 밖에서 깨뜨릴 수 있는 것을 찾고, 안전 근거가 되는 사실 하나를 실행으로 증명. 결과는 PR의 Design decisions·Review focus로 연결 |
 | [`/maymust:benchmark-checklist`](plugins/maymust/skills/benchmark-checklist/SKILL.md) | 성능 수치를 보고하거나 그 수치로 결정하기 전에 7개 질문(한계 요인·튜닝·물리적 한계·오류·재현성·전체 비중·실제 실행)으로 검증 |
-| [`/maymust:how`](plugins/maymust/skills/how/SKILL.md) | 코드·서브시스템 동작을 관점별로 탐색해 설명. 서브에이전트를 여러 개 띄우므로 명시 호출 전용 |
-| [`/maymust:why`](plugins/maymust/skills/why/SKILL.md) | 코드가 왜 이렇게 만들어졌는지 git·PR·Linear·Notion·Slack 근거를 출처별로 읽기 전용 조사. 확인된 사실과 추론을 구분. 명시 호출 전용 |
+| [`/maymust:how`](plugins/maymust/skills/how/SKILL.md) | 코드·서브시스템 동작을 단일 읽기 전용 탐색으로 설명. 읽기 전용 서브에이전트를 사용하므로 명시 호출 전용 |
+| [`/maymust:why`](plugins/maymust/skills/why/SKILL.md) | 코드가 왜 이렇게 만들어졌는지 커밋·PR 기록을 먼저 읽고 부족하면 다른 출처로 보완. 확인된 사실과 추론을 구분. 명시 호출 전용 |
 
 같은 출처에서 self-review·codex 리뷰어의 테스트 판정 기준("동작을 깨면 실패하고 내부만 바꾸면 통과하는가")과 PR 본문 Design decisions의 근거 기록 규칙도 가져왔습니다. pstack의 PR·머지·자율 실행·워크트리 정리 단계는 팀의 PR·리뷰·머지 절차와 충돌하므로 가져오지 않았습니다.
 
@@ -53,7 +53,7 @@ MayMust 팀의 AI 기반 개발 방식 — **우리는 이렇게 일합니다.**
 
 `maymust`를 설치하면 세션 시작 훅이 새 세션·재개·초기화·압축 직후마다 [`team-defaults`](plugins/maymust/skills/team-defaults/SKILL.md)의 짧은 공통 지침을 적용합니다. 결과부터 간결하게 답하고(Attention-kind), 요청 범위만 최소로 바꾸고(Karpathy Guidelines), 완료를 주장하기 전에 실제 검증 결과를 확인합니다(verification-before-completion). 측정한 성능 수치는 benchmark-checklist로 점검합니다. 응답 스타일 바꾸기와 자세한 내용은 [매뉴얼 3장](docs/MANUAL.md#3-세션마다-적용되는-공통-지침)을 참고합니다.
 
-외부 원본은 commit SHA에 고정되어 설치 중 최신 `main`을 내려받지 않습니다. Attention Span은 **AGPL-3.0**, 세 다른 소스는 MIT를 선언합니다. pstack 자료는 원본을 그대로 복사하지 않고 팀 흐름에 맞게 수정해 이식했습니다. 원본 라이선스, Karpathy 저장소의 별도 LICENSE 파일 부재, 팀 적용 변경점은 [`THIRD_PARTY_NOTICES.md`](plugins/maymust/THIRD_PARTY_NOTICES.md)에 기록합니다.
+외부 원본은 commit SHA에 고정되어 설치 중 최신 `main`을 내려받지 않습니다. Attention Span은 **AGPL-3.0**, 세 다른 소스는 MIT를 선언합니다. pstack 독립 스킬 4개는 원본 그대로 복사하며, 기존 팀 워크플로우에 포함된 원칙 3개만 이식합니다. 원본 라이선스, Karpathy 저장소의 별도 LICENSE 파일 부재, 팀 적용 변경점은 [`THIRD_PARTY_NOTICES.md`](plugins/maymust/THIRD_PARTY_NOTICES.md)에 기록합니다.
 
 ## 공개 Codex 스킬
 
