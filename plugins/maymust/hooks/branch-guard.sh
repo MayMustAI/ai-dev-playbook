@@ -119,7 +119,8 @@ def simple_command(words, folder, found):
 
 def commit_folders(command, folder):
     """명령 안의 git commit 마다 그 커밋이 실행될 폴더(확인할 수 없으면 None)를 돌려준다."""
-    lexer = shlex.shlex(command, posix=True, punctuation_chars=";&|()<>\n")
+    # 셸처럼 백슬래시 줄 이어쓰기를 먼저 지운다
+    lexer = shlex.shlex(command.replace("\\\n", ""), posix=True, punctuation_chars=";&|()<>\n")
     lexer.whitespace = " \t\r"
     lexer.whitespace_split = True
     lexer.commenters = ""
@@ -139,10 +140,10 @@ def commit_folders(command, folder):
                 folder = after
             piped = op in ("|", "|&")
             if op == "(":
-                subshells.append(folder)
+                subshells.append((folder, list_start))
             elif op == ")" and subshells:
-                folder = subshells.pop()
-            if op not in ("&&", "||", "|", "|&"):
+                folder, list_start = subshells.pop()
+            if op not in ("&&", "||", "|", "|&", ")"):
                 list_start = folder
     simple_command(words, folder, found)
     return found
