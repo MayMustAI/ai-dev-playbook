@@ -108,13 +108,6 @@
           ]
         },
         {
-          "upstream_path": "pstack/skills/principle-explain-the-number/SKILL.md",
-          "upstream_sha256": "cd5a25f9e7cf023627ccb470dc5faa97542f29b4319496a32b839a8e1e988047",
-          "used_in": [
-            "skills/benchmark-checklist/SKILL.md"
-          ]
-        },
-        {
           "upstream_path": "pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
           "upstream_sha256": "f7223698623b6a26fea49c751e466b38e6691b1f32ce841d3983e7ffbe2b74a6",
           "used_in": [
@@ -211,6 +204,28 @@
           "upstream_sha256": "bf2661f1a81c37700884a45b77d6289be0c802b065febced31990e6564510839",
           "used_in": [
             "skills/why/references/sources/incident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pstack-benchmark",
+      "repository": "https://github.com/cursor/plugins",
+      "commit": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
+      "license": "MIT",
+      "files": [
+        {
+          "upstream_path": "pstack/LICENSE",
+          "path": "third-party/pstack/LICENSE",
+          "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e"
+        }
+      ],
+      "adapted": [
+        {
+          "upstream_path": "pstack/skills/principle-explain-the-number/SKILL.md",
+          "upstream_sha256": "3c84fbf9a7d9842abcfcd134010782b32092ac3d3fb4aaf9ed5732dca83aa58c",
+          "used_in": [
+            "skills/benchmark-checklist/SKILL.md"
           ]
         }
       ]

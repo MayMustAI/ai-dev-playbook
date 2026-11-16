@@ -62,7 +62,8 @@ class BundledSourceTests(unittest.TestCase):
         self.lock = json.loads((PLUGIN / "third-party/skills.lock.json").read_text())
 
     def test_upstream_files_match_lock_and_commits_are_pinned(self):
-        self.assertEqual(len(self.lock["sources"]), 4)
+        self.assertEqual({source["name"] for source in self.lock["sources"]},
+                         {"superpowers", "attention-span", "karpathy-guidelines", "pstack", "pstack-benchmark"})
         for source in self.lock["sources"]:
             self.assertRegex(source["commit"], r"^[0-9a-f]{40}$")
             for file in source["files"]:
@@ -97,6 +98,24 @@ class BundledSourceTests(unittest.TestCase):
                 relative = str(path.relative_to(PLUGIN))
                 self.assertIn(relative, used)
                 self.assertIn(provenance, path.read_text(), relative)
+
+    def test_benchmark_partial_port_has_separate_pinned_provenance(self):
+        source = next(source for source in self.lock["sources"] if source["name"] == "pstack-benchmark")
+        legacy = next(source for source in self.lock["sources"] if source["name"] == "pstack")
+        self.assertNotEqual(source["commit"], legacy["commit"])
+        self.assertEqual(source["license"], "MIT")
+        self.assertEqual(source["files"], legacy["files"])
+        self.assertEqual(len(source["adapted"]), 1)
+        entry = source["adapted"][0]
+        self.assertEqual(entry["upstream_path"], "pstack/skills/principle-explain-the-number/SKILL.md")
+        self.assertNotIn(entry["upstream_path"], {e["upstream_path"] for e in legacy["adapted"]})
+        self.assertRegex(entry["upstream_sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(entry["used_in"], ["skills/benchmark-checklist/SKILL.md"])
+        text = (PLUGIN / entry["used_in"][0]).read_text()
+        self.assertIn(f"pstack(cursor/plugins@{source['commit'][:7]}, MIT)", text)
+        self.assertIn("noise floor", text)
+        self.assertIn("## 7개 질문", text)
+        self.assertIn("판정이 아슬아슬하면", text)
 
     def test_costly_skills_are_explicit_in_both_runtimes(self):
         for name in ["how", "why", "glance-test"]:

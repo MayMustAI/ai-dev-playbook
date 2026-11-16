@@ -1,6 +1,6 @@
 # Bundled third-party instructions
 
-MayMust 0.10.1 distributes the files below at fixed upstream commits. Installation
+MayMust 0.10.2 distributes the files below at fixed upstream commits. Installation
 does not download upstream `main` or run upstream installers. The complete list of
 copied files and their SHA-256 hashes is in [skills.lock.json](third-party/skills.lock.json).
 Copied instruction/style files are unchanged; MayMust runtime metadata lives beside
@@ -14,7 +14,8 @@ the shipped copy. See [Adapted material from pstack](#adapted-material-from-psta
 | [obra/superpowers](https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d) | `8ca22dba9a94f28898bbce59f2537ff4d87c747d` | Only `verification-before-completion/SKILL.md` | MIT |
 | [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42) | `39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42` (0.12) | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles. Since upstream 0.9 they live under `plugins/attention-span/` | AGPL-3.0 |
 | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/tree/2c606141936f1eeef17fa3043a72095b4765b9c2) | `2c606141936f1eeef17fa3043a72095b4765b9c2` | `karpathy-guidelines/SKILL.md` | MIT (declared upstream) |
-| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/f2bad5225cb2d4f5e58b45aa36be89d16a558c13/pstack) | `f2bad5225cb2d4f5e58b45aa36be89d16a558c13` | `LICENSE` copied unchanged; methods from 17 files adapted into MayMust skills (below) | MIT |
+| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/f2bad5225cb2d4f5e58b45aa36be89d16a558c13/pstack) | `f2bad5225cb2d4f5e58b45aa36be89d16a558c13` | `LICENSE` copied unchanged; methods from 16 files adapted into MayMust skills (below) | MIT |
+| [cursor/plugins `pstack/` benchmark update](https://github.com/cursor/plugins/tree/bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7/pstack) | `bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7` | `principle-explain-the-number` manually ported; same MIT license bytes | MIT |
 
 ## License notices
 
@@ -83,3 +84,22 @@ changes, run the hook/distribution tests, and bump the plugin version. Preserve 
 one-skill selection for Superpowers. For pstack, compare each upstream path at the
 new commit with its `upstream_sha256`, port the relevant changes by hand, and then
 update the commit, hashes, and provenance comments.
+
+## Partial pstack update, 2026-11-16
+
+The `pstack-benchmark` lock source pins only the updated measurement principle at
+`bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7`. Before measuring, name the decision-changing
+result and noise floor; stop ranking results when run-to-run spread exceeds the
+effect. The existing seven checks and MayMust reporting safeguards remain intact.
+The `pstack` source keeps the other 16 historical inputs at `f2bad52`; its license
+bytes are identical to the newer source and are shared, not replaced. The old
+benchmark-checklist and newer measurement principle intentionally use separate pins.
+
+Upstream removed ten tracked `how`/`why` reference paths rather than moving them.
+The latest `how` uses one explorer/explainer; `why` became a short record-first
+instruction. MayMust retains its detailed local references, read-only boundaries,
+source scoping and evidence format. These are not claimed to be synchronized.
+`blast-radius` only removed cross-references to old `why` steps; MayMust already
+uses direct PR/commit instructions, so no behavioral port was needed. No deleted
+upstream path is silently remapped and no historical hash is replaced with a
+nonmatching latest-commit hash.
