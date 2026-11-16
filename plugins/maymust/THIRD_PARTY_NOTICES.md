@@ -1,20 +1,20 @@
 # Bundled third-party instructions
 
-MayMust 0.10.0 distributes the files below at fixed upstream commits. Installation
+MayMust 0.11.1 distributes the files below at fixed upstream commits. Installation
 does not download upstream `main` or run upstream installers. The complete list of
 copied files and their SHA-256 hashes is in [skills.lock.json](third-party/skills.lock.json).
 Copied instruction/style files are unchanged; MayMust runtime metadata lives beside
 them, and team adaptations live in [team-defaults](skills/team-defaults/SKILL.md).
-Material adapted from pstack is the one exception: it is modified on purpose, so the
+Three embedded principles from pstack are modified on purpose, so the
 lock file records the hash of each upstream file it came from instead of a hash of
-the shipped copy. See [Adapted material from pstack](#adapted-material-from-pstack-2026-10-22).
+the shipped copy. See [pstack upstream fidelity](#pstack-upstream-fidelity-2026-11-16).
 
 | Source | Pinned commit | Included material | Upstream license |
 | --- | --- | --- | --- |
 | [obra/superpowers](https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d) | `8ca22dba9a94f28898bbce59f2537ff4d87c747d` | Only `verification-before-completion/SKILL.md` | MIT |
-| [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/8a6e2250dbc1dfb1b4186e03a92484d8c799c1b0) | `8a6e2250dbc1dfb1b4186e03a92484d8c799c1b0` (0.11) | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles. Since upstream 0.9 they live under `plugins/attention-span/` | AGPL-3.0 |
+| [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42) | `39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42` (0.12) | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles. Since upstream 0.9 they live under `plugins/attention-span/` | AGPL-3.0 |
 | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/tree/2c606141936f1eeef17fa3043a72095b4765b9c2) | `2c606141936f1eeef17fa3043a72095b4765b9c2` | `karpathy-guidelines/SKILL.md` | MIT (declared upstream) |
-| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/f2bad5225cb2d4f5e58b45aa36be89d16a558c13/pstack) | `f2bad5225cb2d4f5e58b45aa36be89d16a558c13` | `LICENSE` copied unchanged; methods from 17 files adapted into MayMust skills (below) | MIT |
+| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7/pstack) | `bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7` | Four standalone skills + LICENSE copied unchanged; three embedded principles adapted | MIT |
 
 ## License notices
 
@@ -47,39 +47,35 @@ checks. Verification evidence must follow the last relevant change; unchanged,
 already-verified work does not need repeated checks for every status message.
 Regression red/green demonstrations preserve the user's working tree.
 
-## Adapted material from pstack, 2026-10-22
+## pstack upstream fidelity, 2026-11-16
 
-pstack's playbook router, PR, merge, autopilot, and worktree-cleanup steps are not
-bundled, because they conflict with the MayMust commit, PR, review, and merge flow.
-Only methods that fit that flow were adapted. Each adapted Markdown file in a new
-skill starts with a provenance comment that names its upstream path and commit.
+At the user's direction, the standalone `blast-radius`, `benchmark-checklist`,
+`how`, and `why` SKILL.md files now match the pinned upstream bytes exactly.
+`how` uses one exploration/explanation pass. `why` starts with the introducing and
+subsequent commits and PR discussions, consulting other sources when that record
+is thin. Ten how/why reference files deleted upstream are also removed locally;
+the previous source-by-source fan-out and fixed report format are not retained.
+All pstack tracking is consolidated at the commit above, including the former
+`pstack-benchmark` source. No historical compatibility fork remains.
 
-| Upstream file under `pstack/skills/` | MayMust file under `skills/` |
-| --- | --- |
-| `blast-radius/SKILL.md` | `blast-radius/SKILL.md` |
-| `benchmark-checklist/SKILL.md`, `principle-explain-the-number/SKILL.md` | `benchmark-checklist/SKILL.md` |
-| `how/SKILL.md` and its two prompt templates | `how/` |
-| `why/SKILL.md`, `epistemics.md`, investigator and synthesizer prompts, five source guides | `why/` |
-| `principle-test-behavior-not-implementation/SKILL.md` | test lens in `self-review/SKILL.md` and `codex-review/references/reviewer-prompt.md` |
-| `show-me-your-work/SKILL.md` | evidence rule for Design decisions in `pull-request/SKILL.md` |
+The same MIT license bytes are preserved. Runtime metadata lives in agents/openai.yaml.
+`team-defaults` only maps Cursor-only tools and unbundled playbook names to the host:
+Task to an available read-only agent (or sequential fallback), arena to available
+independent perspectives, unslop to clarity editing, Opening a PR to the existing
+MayMust PR workflow. It does not recreate deleted investigation templates.
 
-Changes from upstream: rewritten in Korean to match the other team workflow skills;
-Cursor tool names, model roles, the `pstack-models` rule, and the Cursor adapter
-removed; subagents made optional so the same skills run in Claude Code and Codex;
-`why` sources limited to git, Linear, Notion, and Slack, with `.worklogs/` added to
-the git source; investigators and synthesizers made explicitly read-only; results
-wired to `pull-request` and `codex-review`. `how` and `why` are
-explicit-only in both runtimes because each run can start several subagents.
+Three principles already embedded in team-owned workflows remain adapted:
+- principle-explain-the-number: pre-measurement decision/noise floor and evidence
+  rules in team-defaults, without altering the upstream benchmark skill.
+- principle-test-behavior-not-implementation: the test lens in self-review and
+  codex-review, mirrored in the standalone independent-review prompt.
+- show-me-your-work: evidence rules in pull-request Design decisions.
+These are fragments, not claims that the full upstream skills are installed.
+Their input hashes and local use sites are in skills.lock.json.
 
-`python3 scripts/check_upstream.py` (from the repository root) compares every tracked
-file with its upstream's latest commit and prints a JSON report. With `--apply` it copies
-changed files and updates the lock, but only for a source whose tracked paths all still
-exist, whose license file did not change, and whose adapted material did not change.
-It never edits adapted material, so the pinned commit keeps matching every recorded hash.
-
-To update a source, review the new upstream commit, replace only the selected files,
-update the commit and hashes in the lock file and this notice, inspect any license
-changes, run the hook/distribution tests, and bump the plugin version. Preserve the
-one-skill selection for Superpowers. For pstack, compare each upstream path at the
-new commit with its `upstream_sha256`, port the relevant changes by hand, and then
-update the commit, hashes, and provenance comments.
+Future sync follows upstream renames, consolidation and deletion for selected
+pstack material after checking provenance, license, local integrity and references.
+Do not silently create a MayMust-only fork to preserve an upstream-deleted workflow.
+License or capability changes still require review; no upstream text grants new
+permissions. The current check_upstream.py mechanically updates copied files only;
+adapted changes and deletion/remapping need the scheduled agent's reviewed patch.

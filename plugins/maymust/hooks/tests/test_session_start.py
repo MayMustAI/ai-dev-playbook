@@ -62,7 +62,8 @@ class BundledSourceTests(unittest.TestCase):
         self.lock = json.loads((PLUGIN / "third-party/skills.lock.json").read_text())
 
     def test_upstream_files_match_lock_and_commits_are_pinned(self):
-        self.assertEqual(len(self.lock["sources"]), 4)
+        self.assertEqual({source["name"] for source in self.lock["sources"]},
+                         {"superpowers", "attention-span", "karpathy-guidelines", "pstack"})
         for source in self.lock["sources"]:
             self.assertRegex(source["commit"], r"^[0-9a-f]{40}$")
             for file in source["files"]:
@@ -80,23 +81,36 @@ class BundledSourceTests(unittest.TestCase):
             self.assertIn("disable-model-invocation: true", (PLUGIN / "skills" / name / "SKILL.md").read_text())
             self.assertIn("allow_implicit_invocation: false", (PLUGIN / "skills" / name / "agents/openai.yaml").read_text())
 
-    def test_adapted_pstack_material_is_traceable_to_pinned_upstream(self):
+    def test_pstack_standalone_skills_are_copied_not_adapted(self):
         source = next(source for source in self.lock["sources"] if source["name"] == "pstack")
         self.assertEqual(source["license"], "MIT")
-        self.assertEqual({file["upstream_path"] for file in source["files"]}, {"pstack/LICENSE"})
-        used = set()
-        for entry in source["adapted"]:
-            self.assertTrue(entry["upstream_path"].startswith("pstack/skills/"), entry)
-            self.assertRegex(entry["upstream_sha256"], r"^[0-9a-f]{64}$")
-            for path in entry["used_in"]:
+        skills = {"blast-radius", "benchmark-checklist", "how", "why"}
+        self.assertEqual({e["upstream_path"] for e in source["files"]},
+                         {"pstack/LICENSE"} | {f"pstack/skills/{name}/SKILL.md" for name in skills})
+        self.assertEqual({e["upstream_path"] for e in source["adapted"]}, {
+            "pstack/skills/principle-explain-the-number/SKILL.md",
+            "pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+            "pstack/skills/show-me-your-work/SKILL.md"})
+        for e in source["adapted"]:
+            self.assertRegex(e["upstream_sha256"], r"^[0-9a-f]{64}$")
+            for path in e["used_in"]:
                 self.assertTrue((PLUGIN / path).is_file(), path)
-                used.add(path)
-        provenance = f"pstack(cursor/plugins@{source['commit'][:7]}, MIT)"
-        for name in ["blast-radius", "benchmark-checklist", "how", "why"]:
-            for path in (PLUGIN / "skills" / name).rglob("*.md"):
-                relative = str(path.relative_to(PLUGIN))
-                self.assertIn(relative, used)
-                self.assertIn(provenance, path.read_text(), relative)
+        for name in skills:
+            self.assertIn("disable-model-invocation: true", (PLUGIN / "skills" / name / "SKILL.md").read_text())
+            self.assertIn("allow_implicit_invocation: false", (PLUGIN / "skills" / name / "agents/openai.yaml").read_text())
+
+    def test_removed_pstack_reference_workflows_are_not_retained(self):
+        for name in ["how", "why"]:
+            self.assertEqual(list((PLUGIN / "skills" / name / "references").rglob("*.md")), [])
+            self.assertNotIn("references/", (PLUGIN / "skills" / name / "SKILL.md").read_text())
+        how = (PLUGIN / "skills/how/SKILL.md").read_text()
+        self.assertIn("Spawn one Task subagent", how)
+        why = (PLUGIN / "skills/why/SKILL.md").read_text()
+        self.assertIn("other sources if the trail is thin", why)
+        profile = (PLUGIN / "skills/team-defaults/SKILL.md").read_text()
+        self.assertIn("noise floor", profile)
+        self.assertIn("same read-only task", profile)
+        self.assertIn("not installed playbooks", profile)
 
     def test_costly_skills_are_explicit_in_both_runtimes(self):
         for name in ["how", "why", "glance-test"]:

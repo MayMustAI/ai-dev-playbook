@@ -61,3 +61,24 @@ This profile guides behavior; it is not a technical gate that guarantees a model
 will obey. Repository CI and the current-head merge review gate provide separate
 enforcement. Upstream provenance and licenses are in the plugin's
 `THIRD_PARTY_NOTICES.md` and `third-party/skills.lock.json`.
+
+## pstack runtime compatibility
+
+The bundled pstack skill bodies follow upstream unchanged. Use the user's language.
+Map Cursor's `Task` / `generalPurpose` / `readonly: true` to the host's native
+read-only general-purpose subagent. If unavailable, do the same read-only task in
+the current session. `how` stays one exploration/explanation pass; do not restore
+the former multi-investigator workflow or removed reference templates.
+The unbundled `arena` means independent model perspectives only when supported;
+otherwise disclose that only one perspective was available. The unbundled `unslop`
+means a clarity edit, not an instruction to install or invoke an unavailable tool.
+Use `sysctl -n hw.ncpu` on macOS when upstream calls for Linux `nproc`.
+Opening a PR maps to MayMust's existing PR workflow; Perf issue / Hillclimb are
+upstream references, not installed playbooks or permission to run a new workflow.
+
+<!-- pstack(cursor/plugins@bf0c7cd, MIT) skills/principle-explain-the-number/SKILL.md measurement principle; provenance: THIRD_PARTY_NOTICES.md -->
+Before measuring, write the result that would change a decision and the noise floor.
+Stop when run-to-run spread exceeds the effect. Name the measured limiter, rule out
+other explanations with evidence, and keep the run count and spread with the number.
+For evals, also check whether all trials did the task, the gap holds across trials
+and models, and the scenario matters. Apply the bundled benchmark-checklist for perf.

@@ -1,82 +1,50 @@
 ---
 name: blast-radius
-description: 변경이 diff 밖에서 무엇을 깨뜨릴 수 있는지 찾고, 변경이 안전하다는 근거가 되는 사실 하나를 실제 코드 실행으로 증명한다. PR 전 영향 범위 점검이나 믿기 어려운 작은 diff를 검토할 때 사용. "영향 범위", "blast radius", "이 변경이 뭘 깨뜨릴 수 있어", "/blast-radius" 호출 시 사용.
+description: "Find what a change could break somewhere else before it ships, beyond the diff, and prove the one fact it's safe because of by running real code instead of writing it up. Use for 'blast radius of X', 'what could this break', or reviewing a small diff you don't trust."
+disable-model-invocation: true
 ---
 
-<!-- pstack(cursor/plugins@f2bad52, MIT) skills/blast-radius/SKILL.md를 MayMust 흐름에 맞게 수정해 이식. 출처: THIRD_PARTY_NOTICES.md -->
+# Blast radius
 
-# `/maymust:blast-radius` — 변경 영향 범위 점검
+Find what a change breaks somewhere else, before it ships. Use for "blast radius of X", "what could this break", or reviewing a small diff you don't trust yet.
 
-> 호출자 목록은 grep으로 금방 나온다. 이 스킬의 일은 grep이 보여 주지 않는 파손을 찾고, 변경이 안전하다는 근거를 실행으로 증명하는 것이다.
+Companion to `how` and `why`. `how` tells you what the code does. `why` tells you why it's shaped that way. Blast radius tells you what it breaks somewhere else.
 
-## 호출 예
+Listing the callers is not the job. The agent can grep those in a second. The job is the breakage grep won't show you.
 
-```
-/maymust:blast-radius            # 현재 브랜치의 PR base 대비 전체 변경
-/maymust:blast-radius 42         # PR 번호
-/maymust:blast-radius <sha>      # 특정 커밋
-```
+## Don't trust your own writeup
 
-## 핵심 원칙 — 그럴듯한 보고서를 믿지 않는다
+A blast-radius writeup that sounds right is worthless. It reads as convincing whether or not it's true. So don't hand back the writeup. Find the one or two facts the whole thing depends on and prove them by running code.
 
-영향 범위 보고서는 사실이든 아니든 똑같이 그럴듯하게 읽힌다. 그래서 보고서를 넘기는 데서 끝내지 않는다. 변경의 안전성이 기대는 사실 한두 개를 찾아 코드를 실행해 증명한다.
+### How sure are you
 
-### 확신 단계
+For each fact the change's safety depends on, get it as far down this list as is cheap, and say where it stopped.
 
-안전성이 기대는 사실마다 아래 단계 중 비용이 감당되는 곳까지 끌어내리고, 어느 단계에서 멈췄는지 밝힌다.
+1. You said so. Worthless on its own.
+2. You pointed at the line. A real `file:line`, or the library's own source.
+3. You showed the bad case can't happen. You walked the failure step by step and it doesn't reach.
+4. You ran it. A script or test that calls the real code and fails loud if you're wrong.
+5. You reproduced it in the running app.
 
-1. **주장** — 말로만 했다. 그 자체로는 근거가 아니다
-2. **위치** — 실제 `file:line`이나 사용하는 라이브러리의 소스를 가리켰다
-3. **불가능 증명** — 실패 경로를 한 단계씩 따라가 문제 상황에 도달하지 않음을 보였다
-4. **실행** — 실제 코드를 호출하고, 틀렸다면 크게 실패하는 스크립트나 테스트를 돌렸다
-5. **재현** — 실행 중인 앱에서 재현했다
+Step 4 is usually one small script that imports the same library the app ships and calls the exact function you're worried about.
 
-4단계는 보통 앱이 쓰는 라이브러리를 그대로 import해서 걱정되는 함수를 직접 호출하는 작은 스크립트 하나면 된다.
+## Steps
 
-## 워크플로우
+1. Read the change. The diff, the symbols it adds, changes, and deletes, and what it now does differently, including the part the diff doesn't spell out. Pull the PR and its commits.
+2. Find the one fact it's safe because of. Most changes that look risky are safe because of a single fact, like "this call only drops already-dead cache entries and does nothing else". Find that fact. If it holds, most risky cases are cleared at once. Spend your time here, not on a long list of maybes.
+3. Look where grep stops. Read the source of the library you call, and check its pinned version and any local patch. Work out when things run: microtasks, unmount and teardown, Solid versus React. Follow what a symbol search misses: the JSON an API returns, a DB column, a wire format, another language reading the same bytes, a feature flag, code three hops downstream.
+4. Be honest about each risk. Give it a real chance of happening and a real cost if it does. Keep the risks you confirmed. List the ones you checked and cleared separately. Cite a real `file:line`, a search that finds nothing is still an answer, and never make up a caller or an API.
+5. Prove the one fact. Write a script or test that runs the real code, run it, and paste what happened.
+6. For a big or wide change, run it as an `arena`. Ask more than one model the same question and merge the answers. Different models catch different real bugs.
 
-1. **변경 읽기** — 인자가 없으면 PR base(기본 `dev`)와의 merge-base 이후 전체 변경(`git diff <base>...HEAD`)을 본다. 추가·변경·삭제된 심볼과, diff에 드러나지 않지만 달라진 동작까지 파악한다. PR과 커밋 맥락은 `gh pr view <N> --json title,body,comments`와 `git log --follow -- <file>`로 가져온다
-2. **안전 근거 사실 찾기** — 위험해 보이는 변경 대부분은 사실 하나 때문에 안전하다. 예: "이 호출은 이미 만료된 캐시 항목만 지우고 다른 일은 하지 않는다". 그 사실이 성립하면 위험 사례 대부분이 한 번에 해소된다. 긴 "혹시" 목록보다 이 사실을 찾는 데 시간을 쓴다
-3. **grep이 멈추는 곳 보기**
-   - 호출하는 라이브러리의 소스, 고정된 버전, 로컬 패치를 확인한다
-   - 실행 시점을 따진다: 비동기 큐, 해제·종료 순서, 재시도, 프레임워크 생명주기
-   - 심볼 검색이 놓치는 경로를 따라간다: API가 반환하는 JSON, DB 컬럼, 직렬화 형식, 같은 바이트를 읽는 다른 언어, 기능 플래그, 설정 파일, 세 단계 아래의 소비자
-4. **위험을 정직하게 평가** — 각 위험에 실제 발생 가능성과 발생 시 비용을 붙인다. 확인된 위험과, 확인했지만 문제없던 항목을 나눈다. 실제 `file:line`만 인용하고, 검색 결과가 없다는 것도 답으로 기록한다. 호출자나 API를 지어내지 않는다
-5. **안전 근거 증명** — 실제 코드를 실행하는 스크립트나 테스트를 작성해 돌리고 출력을 그대로 붙인다. 스크립트는 저장소 밖 임시 경로에 두고, 계속 남길 가치가 있을 때만 테스트로 옮긴다
-6. **넓은 변경은 관점을 나눈다** — 변경이 크거나 여러 모듈에 걸치면 영향 경로를 2~4개 관점(예: 데이터 형식, 실행 시점, 외부 소비자)으로 나눠 조사한다. 서브에이전트를 쓸 수 있으면 관점마다 읽기 전용 서브에이전트에 맡기고, 아니면 순서대로 조사한다. 다른 모델의 시각이 필요하면 `/maymust:codex-review --once`를 함께 실행한다
+## What to hand back
 
-## 출력 포맷
+- **What it does.** What changed, including the part that isn't obvious.
+- **The one fact it's safe because of.** State it, say which step you got it to, and show the proof. If you couldn't prove it, write unproven.
+- **Risks.** Each names how it breaks, the `file:line`, how likely and how bad, and how to check. Paste the proof for the ones that matter.
+- **Cleared.** What you checked and why it's fine.
+- **Before you merge.** The cheapest test or repro that catches the real bug, including the script you wrote.
 
-```markdown
-# Blast radius — <대상: PR #N / 브랜치 / 커밋>
+Write it through `unslop`, cite real code, and strip anything private before it goes anywhere public.
 
-## 무엇이 바뀌었나
-<드러나지 않는 동작 변화까지>
-
-## 안전 근거
-- 사실: <변경이 안전한 이유가 되는 사실>
-- 확신 단계: <1~5 중 도달한 단계>
-- 증명: <실행한 명령과 출력> 또는 `미증명: <이유>`
-
-## 위험
-- `<file:line>` — <어떻게 깨지나> · 가능성 <높음/중간/낮음> · 비용 <...> · 확인 방법 <...>
-
-## 확인했지만 문제없음
-- <무엇을 확인했고, 왜 문제없는지>
-
-## 머지 전 확인
-- <실제 결함을 잡는 가장 싼 테스트나 재현. 작성한 스크립트 포함>
-```
-
-## PR과 연결
-
-- `/maymust:pull-request` 본문의 `## Design decisions`에 안전 근거 사실과 확신 단계를, `## Review focus`에 확인된 위험을 옮긴다
-- 증명에 쓴 명령과 결과는 Self-verification의 "1. 직접 테스트"에 남긴다
-- 비공개 정보(토큰, 고객 데이터, 내부 URL)는 PR이나 공개 문서로 옮기기 전에 지운다
-
-## 금지 사항
-
-- ❌ 호출자 목록만 나열하고 끝내기 — grep 결과는 영향 범위 분석이 아니다
-- ❌ 증명하지 못한 안전 근거를 확정된 것처럼 쓰기 — `미증명`으로 표시한다
-- ❌ 증명용 스크립트를 저장소에 남겨 두기 — 남길 가치가 있으면 테스트로 옮기고, 아니면 지운다
-- ❌ 존재하지 않는 호출자·API·`file:line` 인용
+**Reply:** the writeup above, with the one safety fact either proven or marked unproven.

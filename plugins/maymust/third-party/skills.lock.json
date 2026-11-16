@@ -22,43 +22,43 @@
     {
       "name": "attention-span",
       "repository": "https://github.com/alexgreensh/attention-span",
-      "commit": "8a6e2250dbc1dfb1b4186e03a92484d8c799c1b0",
+      "commit": "39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42",
       "license": "AGPL-3.0",
       "files": [
         {
           "upstream_path": "plugins/attention-span/skills/attention-kind/SKILL.md",
           "path": "skills/attention-kind/SKILL.md",
-          "sha256": "3bde295bdac53ff79e074bede8a8ec625639dd3fa0ae14b1f02eb8ad62ea485c"
+          "sha256": "7eeaa47de30cac84ecdfd89f62e6700ef24649e5aee22bc0b8db0d7045b4869d"
         },
         {
           "upstream_path": "plugins/attention-span/skills/spartan/SKILL.md",
           "path": "skills/spartan/SKILL.md",
-          "sha256": "50452aba532eeaeb22f919d19f9f5881a9d3459865f3b3f73384a2b360adce62"
+          "sha256": "48df3e5ad34b0a3f41375e8321dbd33665491e1e09cc7cd43ae0c2d186cead40"
         },
         {
           "upstream_path": "plugins/attention-span/skills/rundown/SKILL.md",
           "path": "skills/rundown/SKILL.md",
-          "sha256": "6f867b49f0320620b8946b0adaa3f45ff2011fbae6afbe0132785a204effff7d"
+          "sha256": "3a95ea376e29f6bcd82e113022faf7c86367ee59f250465155040455a3b3d604"
         },
         {
           "upstream_path": "plugins/attention-span/skills/tldr/SKILL.md",
           "path": "skills/tldr/SKILL.md",
-          "sha256": "f0738c3455fe2fbe3e26bfc318b6fbe332580dbaebc210ccd6e8b07e30ba387e"
+          "sha256": "593351d138e96ce177d01bb654d1a7f626a0178dc8eb821ca9f239250f9f2b69"
         },
         {
           "upstream_path": "plugins/attention-span/output-styles/attention-kind.md",
           "path": "output-styles/attention-kind.md",
-          "sha256": "959c0ff96c80ae5f6c007618951cae339340ed586b3b1a7bb5970cf229344ece"
+          "sha256": "0cb9a4e0ba792c4e6bd9f2ff01a8a3c480d309b07d99988da1e42731f069c07b"
         },
         {
           "upstream_path": "plugins/attention-span/output-styles/spartan.md",
           "path": "output-styles/spartan.md",
-          "sha256": "af5b1130633b743588e2610c3e4429827e47b0a39c67073448bf6c23e76fc643"
+          "sha256": "baab4ba7bbaf69fc62bbe0744157337847c098cb0b18ff5458c36b0b7d6eb040"
         },
         {
           "upstream_path": "plugins/attention-span/output-styles/rundown.md",
           "path": "output-styles/rundown.md",
-          "sha256": "c78fd3f8e2c8e6a96515a48e4c32acef2dc6456cdec9aafadd5c53524bd19ced"
+          "sha256": "6e6468c2f273df830f29733f22720d900904cd6a70c20bbf2c4dae3ba6917991"
         },
         {
           "upstream_path": "LICENSE",
@@ -83,37 +83,36 @@
     {
       "name": "pstack",
       "repository": "https://github.com/cursor/plugins",
-      "commit": "f2bad5225cb2d4f5e58b45aa36be89d16a558c13",
+      "commit": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
       "license": "MIT",
       "files": [
         {
           "upstream_path": "pstack/LICENSE",
           "path": "third-party/pstack/LICENSE",
           "sha256": "bc957ca6bee02792566a1a028d105e02e247c6e77cf057061674273da77b200e"
-        }
-      ],
-      "adapted": [
+        },
         {
           "upstream_path": "pstack/skills/blast-radius/SKILL.md",
-          "upstream_sha256": "2e10745b97f5862323dcda3b29ca60d56b5c3c98e37020085d26b48efbe0a436",
-          "used_in": [
-            "skills/blast-radius/SKILL.md"
-          ]
+          "path": "skills/blast-radius/SKILL.md",
+          "sha256": "4248d03e22365207d2e5f90c9542720f80a88a6b42fd542ef88dde3cf9f9223f"
         },
         {
           "upstream_path": "pstack/skills/benchmark-checklist/SKILL.md",
-          "upstream_sha256": "ba109e96c8f6c1c391baccf19e5d11e14370df7b3f2605e1572cd565a6c0fca0",
-          "used_in": [
-            "skills/benchmark-checklist/SKILL.md"
-          ]
+          "path": "skills/benchmark-checklist/SKILL.md",
+          "sha256": "ba109e96c8f6c1c391baccf19e5d11e14370df7b3f2605e1572cd565a6c0fca0"
         },
         {
-          "upstream_path": "pstack/skills/principle-explain-the-number/SKILL.md",
-          "upstream_sha256": "cd5a25f9e7cf023627ccb470dc5faa97542f29b4319496a32b839a8e1e988047",
-          "used_in": [
-            "skills/benchmark-checklist/SKILL.md"
-          ]
+          "upstream_path": "pstack/skills/how/SKILL.md",
+          "path": "skills/how/SKILL.md",
+          "sha256": "23d5cc79a449b9838242e7af5563aa8a4f0417bab136bbcc054b4bebc7284680"
         },
+        {
+          "upstream_path": "pstack/skills/why/SKILL.md",
+          "path": "skills/why/SKILL.md",
+          "sha256": "6b65b3180f1f1bd3b696d7933daf900747410c82931d220a3f57a98addb1c0fd"
+        }
+      ],
+      "adapted": [
         {
           "upstream_path": "pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
           "upstream_sha256": "f7223698623b6a26fea49c751e466b38e6691b1f32ce841d3983e7ffbe2b74a6",
@@ -130,87 +129,10 @@
           ]
         },
         {
-          "upstream_path": "pstack/skills/how/SKILL.md",
-          "upstream_sha256": "08a00079bb15b4258874ac3ff62d4ca7e94350ffedb521d0fd296dc9dd21904e",
+          "upstream_path": "pstack/skills/principle-explain-the-number/SKILL.md",
+          "upstream_sha256": "3c84fbf9a7d9842abcfcd134010782b32092ac3d3fb4aaf9ed5732dca83aa58c",
           "used_in": [
-            "skills/how/SKILL.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/how/references/explorer-prompt.md",
-          "upstream_sha256": "6300128385ee940fd42ecb84b0e623435440a2dc283eae54ee4a52ba56947ba1",
-          "used_in": [
-            "skills/how/references/explorer-prompt.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/how/references/explainer-prompt.md",
-          "upstream_sha256": "ddb89cebefc24e2b54517a331aedfe045b6971e101f45c71b8cef4cccff45bff",
-          "used_in": [
-            "skills/how/references/explainer-prompt.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/SKILL.md",
-          "upstream_sha256": "144d42e7712723d763e607bc0a969e5f1cdf83ec7228519d87677cc534571bed",
-          "used_in": [
-            "skills/why/SKILL.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/epistemics.md",
-          "upstream_sha256": "d54a2361b2d5973bc3fe2edf62f446d87935974d4b40d47f23b9529f956ca758",
-          "used_in": [
-            "skills/why/references/epistemics.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/investigator-prompt.md",
-          "upstream_sha256": "c44afba186f899094f3694e6c9d6de5d14ff7c4ce28b787a9f50fc789c9a7fc3",
-          "used_in": [
-            "skills/why/references/investigator-prompt.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/synthesizer-prompt.md",
-          "upstream_sha256": "11c62671aa7b7a6e3d36929ffe2b59bf95e6ca664eee4d93e6ee527dd3390ddb",
-          "used_in": [
-            "skills/why/references/synthesizer-prompt.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/sources/code-archaeology.md",
-          "upstream_sha256": "a4a3970e9db448054aed676f3f7feeee667b4b69f0bd57c8fd72b751be687cc7",
-          "used_in": [
-            "skills/why/references/sources/git.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/sources/linear.md",
-          "upstream_sha256": "01304e7f1badfcfb78babbb0edcadeb3cc8dd3f713793420cdff24ba190f907c",
-          "used_in": [
-            "skills/why/references/sources/linear.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/sources/notion.md",
-          "upstream_sha256": "3bcfa695c49dfad4ac036d5d7181c12585f55ac04f1936198d16ab75a2788997",
-          "used_in": [
-            "skills/why/references/sources/notion.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/sources/slack.md",
-          "upstream_sha256": "3bc6309f5c7b26ace3b919dbd7f7b048861dd2020f910fe24f656cc74b3b661c",
-          "used_in": [
-            "skills/why/references/sources/slack.md"
-          ]
-        },
-        {
-          "upstream_path": "pstack/skills/why/references/sources/incident-postmortem.md",
-          "upstream_sha256": "bf2661f1a81c37700884a45b77d6289be0c802b065febced31990e6564510839",
-          "used_in": [
-            "skills/why/references/sources/incident.md"
+            "skills/team-defaults/SKILL.md"
           ]
         }
       ]
