@@ -11,19 +11,22 @@
 
 set -u
 
+script=''
 IFS= read -r -d '' script <<'PY' || true
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
 
 PROTECTED = {"dev", "main"}
 CONTROL = set(";&|()\n")
+OPERATOR = re.compile(r"&&|\|\||\|&?|[;&()\n]")
 SHELLS = {"bash", "sh", "zsh"}
 WRAPPERS = {"command", "env", "exec", "nohup", "time"}
 # git 전역 옵션 중 값을 다음 인자로 받는 것 (-C 는 따로 처리)
-GIT_VALUE_OPTIONS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env"}
+GIT_VALUE_OPTIONS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env", "--attr-source"}
 
 
 def resolve(folder, path):
@@ -50,7 +53,7 @@ def cd(args, folder):
 
 def git_commit_folder(args, folder):
     """전역 옵션을 건너뛰어 하위 명령이 commit 이면 커밋할 폴더를, 아니면 False 를 돌려준다."""
-    i = 0
+    i, direct = 0, False
     while i < len(args) and args[i].startswith("-"):
         option, eq, value = args[i].partition("=")
         i += 1
@@ -62,8 +65,10 @@ def git_commit_folder(args, folder):
         if option == "-C" and value:
             folder = resolve(folder, value)
         elif option in ("--git-dir", "--work-tree"):
-            folder = None
-    return folder if i < len(args) and args[i] == "commit" else False
+            direct = True
+    if i >= len(args) or args[i] != "commit":
+        return False
+    return None if direct else folder
 
 
 def shell_script(args):
@@ -113,17 +118,21 @@ def commit_folders(command, folder):
     lexer.whitespace = " \t\r"
     lexer.whitespace_split = True
     lexer.commenters = ""
-    found, words, subshells = [], [], []
+    found, words, subshells, piped = [], [], [], False
     for token in lexer:
         if not token or any(c not in CONTROL for c in token):
             words.append(token)
             continue
-        for c in token:
-            folder = simple_command(words, folder, found)
+        for op in OPERATOR.findall(token):
+            after = simple_command(words, folder, found)
             words = []
-            if c == "(":
+            # 파이프라인과 백그라운드(&) 명령은 서브셸에서 돌아 cd 가 다음 명령으로 이어지지 않는다
+            if not piped and op not in ("|", "|&", "&"):
+                folder = after
+            piped = op in ("|", "|&")
+            if op == "(":
                 subshells.append(folder)
-            elif c == ")" and subshells:
+            elif op == ")" and subshells:
                 folder = subshells.pop()
     simple_command(words, folder, found)
     return found
