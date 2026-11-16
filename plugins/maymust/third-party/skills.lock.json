@@ -22,43 +22,43 @@
     {
       "name": "attention-span",
       "repository": "https://github.com/alexgreensh/attention-span",
-      "commit": "8a6e2250dbc1dfb1b4186e03a92484d8c799c1b0",
+      "commit": "39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42",
       "license": "AGPL-3.0",
       "files": [
         {
           "upstream_path": "plugins/attention-span/skills/attention-kind/SKILL.md",
           "path": "skills/attention-kind/SKILL.md",
-          "sha256": "3bde295bdac53ff79e074bede8a8ec625639dd3fa0ae14b1f02eb8ad62ea485c"
+          "sha256": "7eeaa47de30cac84ecdfd89f62e6700ef24649e5aee22bc0b8db0d7045b4869d"
         },
         {
           "upstream_path": "plugins/attention-span/skills/spartan/SKILL.md",
           "path": "skills/spartan/SKILL.md",
-          "sha256": "50452aba532eeaeb22f919d19f9f5881a9d3459865f3b3f73384a2b360adce62"
+          "sha256": "48df3e5ad34b0a3f41375e8321dbd33665491e1e09cc7cd43ae0c2d186cead40"
         },
         {
           "upstream_path": "plugins/attention-span/skills/rundown/SKILL.md",
           "path": "skills/rundown/SKILL.md",
-          "sha256": "6f867b49f0320620b8946b0adaa3f45ff2011fbae6afbe0132785a204effff7d"
+          "sha256": "3a95ea376e29f6bcd82e113022faf7c86367ee59f250465155040455a3b3d604"
         },
         {
           "upstream_path": "plugins/attention-span/skills/tldr/SKILL.md",
           "path": "skills/tldr/SKILL.md",
-          "sha256": "f0738c3455fe2fbe3e26bfc318b6fbe332580dbaebc210ccd6e8b07e30ba387e"
+          "sha256": "593351d138e96ce177d01bb654d1a7f626a0178dc8eb821ca9f239250f9f2b69"
         },
         {
           "upstream_path": "plugins/attention-span/output-styles/attention-kind.md",
           "path": "output-styles/attention-kind.md",
-          "sha256": "959c0ff96c80ae5f6c007618951cae339340ed586b3b1a7bb5970cf229344ece"
+          "sha256": "0cb9a4e0ba792c4e6bd9f2ff01a8a3c480d309b07d99988da1e42731f069c07b"
         },
         {
           "upstream_path": "plugins/attention-span/output-styles/spartan.md",
           "path": "output-styles/spartan.md",
-          "sha256": "af5b1130633b743588e2610c3e4429827e47b0a39c67073448bf6c23e76fc643"
+          "sha256": "baab4ba7bbaf69fc62bbe0744157337847c098cb0b18ff5458c36b0b7d6eb040"
         },
         {
           "upstream_path": "plugins/attention-span/output-styles/rundown.md",
           "path": "output-styles/rundown.md",
-          "sha256": "c78fd3f8e2c8e6a96515a48e4c32acef2dc6456cdec9aafadd5c53524bd19ced"
+          "sha256": "6e6468c2f273df830f29733f22720d900904cd6a70c20bbf2c4dae3ba6917991"
         },
         {
           "upstream_path": "LICENSE",
