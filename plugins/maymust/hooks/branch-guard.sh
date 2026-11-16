@@ -24,6 +24,8 @@ PROTECTED = {"dev", "main"}
 CONTROL = set(";&|()\n")
 OPERATOR = re.compile(r"&&|\|\||\|&?|[;&()\n]")
 SHELLS = {"bash", "sh", "zsh"}
+SHELL_VALUE_OPTIONS = {"-o", "+o", "-O", "+O", "--rcfile", "--init-file"}
+KEYWORDS = {"!", "{", "do", "elif", "else", "if", "then", "until", "while"}
 WRAPPERS = {"command", "env", "exec", "nohup", "time"}
 # git 전역 옵션 중 값을 다음 인자로 받는 것 (-C 는 따로 처리)
 GIT_VALUE_OPTIONS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env", "--attr-source"}
@@ -73,11 +75,14 @@ def git_commit_folder(args, folder):
 
 def shell_script(args):
     """bash -c '<script>' 형태면 script 를, 아니면 None 을 돌려준다."""
-    for i, arg in enumerate(args):
-        if not arg.startswith("-"):
-            return None
-        if not arg.startswith("--") and "c" in arg[1:]:
-            return args[i + 1] if i + 1 < len(args) else None
+    i = 0
+    while i < len(args) and args[i][:1] in ("-", "+"):
+        arg = args[i]
+        i += 1
+        if arg in SHELL_VALUE_OPTIONS:
+            i += 1
+        elif not arg.startswith("--") and "c" in arg[1:]:
+            return args[i] if i < len(args) else None
     return None
 
 
@@ -85,7 +90,7 @@ def simple_command(words, folder, found):
     """단순 명령 하나에서 커밋 폴더를 모으고, 다음 명령이 실행될 폴더를 돌려준다."""
     i = 0
     while i < len(words):
-        if "=" in words[i] and words[i].split("=", 1)[0].isidentifier():
+        if ("=" in words[i] and words[i].split("=", 1)[0].isidentifier()) or words[i] in KEYWORDS:
             i += 1
         elif words[i] in WRAPPERS:
             i += 1
@@ -119,6 +124,7 @@ def commit_folders(command, folder):
     lexer.whitespace_split = True
     lexer.commenters = ""
     found, words, subshells, piped = [], [], [], False
+    list_start = folder
     for token in lexer:
         if not token or any(c not in CONTROL for c in token):
             words.append(token)
@@ -126,14 +132,18 @@ def commit_folders(command, folder):
         for op in OPERATOR.findall(token):
             after = simple_command(words, folder, found)
             words = []
-            # 파이프라인과 백그라운드(&) 명령은 서브셸에서 돌아 cd 가 다음 명령으로 이어지지 않는다
-            if not piped and op not in ("|", "|&", "&"):
+            # 파이프라인 명령과 백그라운드(&) 목록은 서브셸에서 돌아 cd 가 뒤로 이어지지 않는다
+            if op == "&":
+                folder = list_start
+            elif not piped and op not in ("|", "|&"):
                 folder = after
             piped = op in ("|", "|&")
             if op == "(":
                 subshells.append(folder)
             elif op == ")" and subshells:
                 folder = subshells.pop()
+            if op not in ("&&", "||", "|", "|&"):
+                list_start = folder
     simple_command(words, folder, found)
     return found
 
