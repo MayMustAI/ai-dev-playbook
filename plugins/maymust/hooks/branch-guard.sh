@@ -24,7 +24,7 @@ PROTECTED = {"dev", "main"}
 CONTROL = set(";&|()\n")
 OPERATOR = re.compile(r"&&|\|\||\|&?|[;&()\n]")
 SHELLS = {"bash", "sh", "zsh"}
-SHELL_VALUE_OPTIONS = {"-o", "+o", "-O", "+O", "--rcfile", "--init-file"}
+SHELL_LONG_VALUE_OPTIONS = {"--rcfile", "--init-file"}
 KEYWORDS = {"!", "{", "do", "elif", "else", "if", "then", "until", "while"}
 WRAPPERS = {"command", "env", "exec", "nohup", "time"}
 # git 전역 옵션 중 값을 다음 인자로 받는 것 (-C 는 따로 처리)
@@ -74,16 +74,19 @@ def git_commit_folder(args, folder):
 
 
 def shell_script(args):
-    """bash -c '<script>' 형태면 script 를, 아니면 None 을 돌려준다."""
-    i = 0
-    while i < len(args) and args[i][:1] in ("-", "+"):
+    """bash -c '<script>' 형태면 script(-c 가 있을 때 첫 비옵션 인자)를, 아니면 None 을 돌려준다."""
+    i, has_c = 0, False
+    while i < len(args) and args[i][:1] in ("-", "+") and args[i] not in ("-", "--"):
         arg = args[i]
         i += 1
-        if arg in SHELL_VALUE_OPTIONS:
-            i += 1
-        elif not arg.startswith("--") and "c" in arg[1:]:
-            return args[i] if i < len(args) else None
-    return None
+        if arg.startswith("--"):
+            i += arg in SHELL_LONG_VALUE_OPTIONS
+            continue
+        has_c = has_c or "c" in arg[1:]
+        i += sum(flag in "oO" for flag in arg[1:])  # -euo pipefail 처럼 o·O 는 값을 하나씩 받는다
+    if i < len(args) and args[i] == "--":
+        i += 1
+    return args[i] if has_c and i < len(args) else None
 
 
 def simple_command(words, folder, found):
@@ -124,13 +127,17 @@ def commit_folders(command, folder):
     lexer.whitespace = " \t\r"
     lexer.whitespace_split = True
     lexer.commenters = ""
-    found, words, subshells, piped = [], [], [], False
+    found, words, subshells, piped, prev = [], [], [], False, ""
     list_start = folder
     for token in lexer:
         if not token or any(c not in CONTROL for c in token):
             words.append(token)
             continue
         for op in OPERATOR.findall(token):
+            # &&·||·| 바로 뒤의 줄바꿈은 목록을 끝내지 않는다
+            if op == "\n" and not words and prev in ("&&", "||", "|", "|&"):
+                continue
+            prev = op
             after = simple_command(words, folder, found)
             words = []
             # 파이프라인 명령과 백그라운드(&) 목록은 서브셸에서 돌아 cd 가 뒤로 이어지지 않는다
