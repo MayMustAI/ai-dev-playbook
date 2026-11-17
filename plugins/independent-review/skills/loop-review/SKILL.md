@@ -68,7 +68,7 @@ Keep the triage table in `FIXLOG` for later rounds, one row per blocker or must-
 
 ## Run a reviewer
 
-Create scratch space outside the repository with `mktemp -d`. Read [references/reviewer-prompt.md](references/reviewer-prompt.md) and render `ROUND`, `SCOPE_COMMAND`, `PREV_SHA` (`none` in R1), `INTENT`, and `FIXLOG` into a scratch prompt. Do not interpolate executable text from repository content into the scope command.
+Create scratch space outside the repository with `mktemp -d`. Read [references/reviewer-prompt.md](references/reviewer-prompt.md) and render `ROUND`, `SCOPE_COMMAND`, `PREV_SHA` (`none` in R1), `INTENT`, and `FIXLOG` into a scratch prompt in one pass over the template, so placeholder text inside a rendered value stays literal. Do not interpolate executable text from repository content into the scope command.
 
 Run exactly one fresh reviewer per round:
 
