@@ -1,6 +1,6 @@
 {
   "name": "independent-review",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Independent Claude and Codex review loops for GitHub pull requests and local code changes.",
   "author": {
     "name": "MayMust",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Independent Review",
     "shortDescription": "Cross-session code review and fix loops",
-    "longDescription": "Run a read-only Claude or fresh Codex reviewer against a verified Git diff, validate findings locally, and converge on zero blocker and must-fix findings without broadening the change.",
+    "longDescription": "Run a read-only Claude or fresh Codex reviewer against a verified Git diff, validate findings locally, and apply only proven minimal fixes. The Codex loop triages findings and re-reviews only the delta for at most three rounds.",
     "developerName": "MayMust",
     "category": "Coding",
     "capabilities": [

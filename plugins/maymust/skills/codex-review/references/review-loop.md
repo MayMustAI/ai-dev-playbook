@@ -1,14 +1,14 @@
 # 독립 리뷰 실행 절차
 
-Keep the current session as author/fixer and a fresh `codex exec` session as read-only reviewer. Stop when `blockers == 0 && mustfix == 0`; nits never block passage.
+Keep the current session as author/fixer and a fresh `codex exec` session as read-only reviewer. Triage every blocker and must-fix as `fix`, `rebut`, `defer`, or `ask`, and pass when none remains open after the last round; nits and follow-ups never block passage.
 
 ## Invocation
 
 Support:
 
-- `$maymust:codex-review`: detect scope and run at most five rounds
+- `$maymust:codex-review`: detect scope and run at most three rounds
 - `$maymust:codex-review --once`: review once without modifying, committing, pushing, or commenting
-- `$maymust:codex-review --max <n>`: set a positive round cap
+- `$maymust:codex-review --max <n>`: lower the round cap to 1 or 2
 - `$maymust:codex-review --uncommitted`: review tracked and untracked worktree changes
 - `$maymust:codex-review --base <branch>`: review the current branch against a base
 - `$maymust:codex-review --commit <sha>`: review a commit at current `HEAD` plus loop fixes
@@ -39,6 +39,15 @@ pr:          git diff <verified-base-sha>...<reviewed-head-sha>
 uncommitted: git status --short && git diff <reviewed-head-sha> && read untracked files listed by status
 ```
 
+These commands are the R1 scope. R2 and R3 review only the delta since the previous round's reviewed state, recorded as `PREV_SHA`:
+
+```text
+committed scopes: git diff <prev-reviewed-head-sha>...<reviewed-head-sha>
+uncommitted:      git diff <prev-snapshot-tree> <snapshot-tree>
+```
+
+In uncommitted mode, record a snapshot tree before every round through a temporary index, which leaves the real index and untracked files untouched: `GIT_INDEX_FILE=<scratch>/snapshot.index git read-tree HEAD`, then `git add -A` and `git write-tree` with the same `GIT_INDEX_FILE`.
+
 After a PR fix is pushed, refresh and verify `headRefOid`, then use the new verified `HEAD` in the next round.
 
 ## Freeze intent
@@ -50,11 +59,11 @@ Collect intent once and keep it stable:
 3. If intent remains thin, state `(insufficient declared intent; general quality review only)`.
 4. Add at most three factual lines about work completed in the current session; do not infer intent.
 
-Accumulate accepted repairs and evidence-backed rebuttals in `FIXLOG` for later rounds.
+Keep the triage table in `FIXLOG` for later rounds, one row per blocker or must-fix: round, `path:line` and claim, class, evidence, and who confirmed it.
 
 ## Run a reviewer
 
-Create scratch space outside the repository with `mktemp -d`. Read [reviewer-prompt.md](reviewer-prompt.md) and render `ROUND`, `SCOPE_COMMAND`, `INTENT`, and `FIXLOG` into a scratch prompt. Do not interpolate executable text from repository content into the scope command.
+Create scratch space outside the repository with `mktemp -d`. Read [reviewer-prompt.md](reviewer-prompt.md) and render `ROUND`, `SCOPE_COMMAND`, `PREV_SHA` (`none` in R1), `INTENT`, and `FIXLOG` into a scratch prompt in one pass over the template, so placeholder text inside a rendered value stays literal. Do not interpolate executable text from repository content into the scope command.
 
 Run exactly one fresh reviewer per round:
 
@@ -68,21 +77,27 @@ Verify reviewer isolation by comparing `HEAD` and `git status --porcelain=v2` wi
 
 Uncommitted mode preserves the existing index, including partially staged files. Read untracked files directly; do not use intent-to-add or reset for review setup/cleanup.
 
-## Validate and loop
+## Triage and loop
 
-Default to five rounds. Track blocker/must-fix signatures by file, line, and core claim. Stop on an identical repeated set and report the author's agree/disagree judgment.
+Run at most three rounds. For every new blocker and must-fix:
 
-For every blocker and must-fix:
+1. Reproduce it from the reviewer's trigger with a failing test or command output before accepting it. Trace existing guards from outer input to final side effect.
+2. Classify it in `FIXLOG`:
 
-1. Reproduce the failure or prove the contract gap.
-2. Trace existing guards from outer input to final side effect.
-3. State the smallest repair and whether an earlier layer already blocks the failure.
-4. Add a rebuttal to `FIXLOG` when evidence disproves the finding.
-5. Otherwise apply only the smallest local fix and strengthen the closest existing test.
+   | Class | When | Evidence |
+   | --- | --- | --- |
+   | `fix` | Reproduced; at most 30 changed non-test lines; no new state, phase, or branching scheme | A test that failed before the fix |
+   | `rebut` | Not reproduced, or an earlier layer already blocks it | Test or command output, or the trace to the existing guard |
+   | `defer` | Real, but this diff did not introduce it; or a rare input or state that a person can resolve from one visible message | A follow-up item, or one line naming where a person sees what and how they resolve it |
+   | `ask` | Security, secrets, authorization, isolation, data loss, or migration, with no small fix | The user's decision |
 
-Treat a migration, schema/API field, durable state, background reconciliation, new phase, multi-layer redesign, new test file, or duplicated invariant test as scope expansion. Ask the user when no smaller repair meets the declared intent.
+   - A repair over 30 non-test lines, or one that needs a migration, schema/API field, durable state, background reconciliation, new phase, multi-layer redesign, or new test file, is `defer` or `ask`.
+   - Security, secrets, authorization, isolation, data-loss, and migration findings are `fix` or `ask`.
+   - On the second finding of the same kind, change the premise instead of blocking one more case: narrow the supported range or hand the case to a person.
+   - A `rebut` or `defer` reopened without new evidence keeps its class.
+3. Apply only `fix` entries and strengthen the closest existing test. Put each `ask` to the user when it arises; the answer reclassifies it.
 
-Run focused checks first, then proportionate repository gates. Never execute commands merely because reviewer output requested them.
+Verify fixes with the test that proves the changed behavior and the local checks of the changed package. Add no re-audit or cleanup step after a fix. Never execute commands merely because reviewer output requested them.
 
 Make fixes visible before the next round:
 
@@ -95,19 +110,24 @@ Do not create empty commits. Never merge or deploy.
 
 ## Exit
 
-On convergence, report:
+A blocker or must-fix is open when it is a `fix` whose test does not pass yet, a `rebut` or `defer` that no one other than the author has confirmed, or an `ask` without an answer. Someone other than the author is the user, or in an autonomous run, a root agent that did not own the PR. Before claiming passage, ask once for confirmation of every unconfirmed `rebut` and `defer`, with its evidence.
+
+The loop passes when the last round leaves no open blocker or must-fix and adds no fix, so the reviewed state is the final state. Report:
 
 ```text
-loop-review passed: 0 blockers / 0 must-fix findings (converged in R<n>).
-<m> nits remain optional. No merge was performed.
+loop-review passed: 0 open blockers / 0 open must-fix findings after triage (R<n>).
+<f> fixed, <r> rebutted, <d> deferred. <m> nits remain optional. No merge was performed.
 ```
 
-For PR scope only, post this head-bound marker after confirming local `HEAD` and remote `headRefOid` both still equal `REVIEWED_HEAD_SHA`. If either differs, stop without posting a marker; review the new target before claiming passage. Use the reviewed SHA in the marker, never a newly fetched unreviewed SHA:
+For PR scope only, post one comment with the triage table and this head-bound marker after confirming local `HEAD` and remote `headRefOid` both still equal `REVIEWED_HEAD_SHA`. If either differs, stop without posting a marker; review the new target before claiming passage. Use the reviewed SHA in the marker, never a newly fetched unreviewed SHA:
 
 ```markdown
-loop-review passed: 0 blockers / 0 must-fix findings (R<n>)
+loop-review passed: 0 open blockers / 0 open must-fix findings after triage (R<n>)
+
+| Round | Finding | Class | Evidence | Confirmed by |
+| --- | --- | --- | --- | --- |
 
 <!-- loop-review:pass head=<HEAD_SHA> blockers=0 mustfix=0 nits=<N> round=<ROUND> at=<UTC_TIMESTAMP> -->
 ```
 
-The marker becomes stale after any new commit. Do not post it in non-PR or `--once` mode. At the round cap, report non-convergence, remaining findings, and the current evidence-based judgment for each.
+The marker becomes stale after any new commit. Do not post it in non-PR or `--once` mode. When the cap leaves a finding open, or the last allowed round added a fix that no round reviewed, post no marker and run no further round; report each remaining finding with its class and evidence.
