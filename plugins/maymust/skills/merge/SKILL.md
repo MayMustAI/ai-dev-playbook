@@ -46,7 +46,7 @@ python3 <merge-loop-review-gate-dir>/scripts/check_integration_pr.py --pr <N> > 
 
 | # | 체크 | 실패 시 |
 | --- | --- | --- |
-| 0 | 현재 PR head의 독립 리뷰 통과 마커. 통합 PR은 면제 조건 충족과 사용자 승인으로 대신할 수 있음 | **하드 블록** — [merge-loop-review-gate](../merge-loop-review-gate/SKILL.md)로 검증; 마커도 면제도 없으면 전체 PR 리뷰 루프 수행 |
+| 0 | 현재 PR head의 독립 리뷰 통과 마커(분류 뒤 열린 blocker·must-fix 0, 같은 comment에 분류표). 통합 PR은 면제 조건 충족과 사용자 승인으로 대신할 수 있음 | **하드 블록** — [merge-loop-review-gate](../merge-loop-review-gate/SKILL.md)로 검증; 마커도 면제도 없으면 PR 리뷰 루프(최대 3라운드) 수행 |
 | 1 | PR 존재 · OPEN · 드래프트 아님 | **하드 블록** — "PR 이 없거나 드래프트입니다" |
 | 2 | PR author == `gh auth status` 로그인 사용자 | **경고 + 확인** — 타인 PR 머지 방지 소프트 가드. "계속하시겠어요?" |
 | 3 | `mergeable == MERGEABLE` (conflict 없음) | **하드 블록** — "conflict 해소 후 재시도" |
