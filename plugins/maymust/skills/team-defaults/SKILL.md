@@ -73,12 +73,13 @@ The unbundled `arena` means independent model perspectives only when supported;
 otherwise disclose that only one perspective was available. The unbundled `unslop`
 means a clarity edit, not an instruction to install or invoke an unavailable tool.
 Use `sysctl -n hw.ncpu` on macOS when upstream calls for Linux `nproc`.
-Opening a PR maps to MayMust's existing PR workflow; Perf issue / Hillclimb are
-upstream references, not installed playbooks or permission to run a new workflow.
+Perf issue / Hillclimb are upstream references, not installed playbooks or
+permission to run a new workflow. MayMust’s PR workflow still applies.
 
-<!-- pstack(cursor/plugins@bf0c7cd, MIT) skills/principle-explain-the-number/SKILL.md measurement principle; provenance: THIRD_PARTY_NOTICES.md -->
+<!-- pstack(cursor/plugins@7a58391, MIT) skills/principle-explain-the-number/SKILL.md measurement principle; provenance: THIRD_PARTY_NOTICES.md -->
 Before measuring, write the result that would change a decision and the noise floor.
-Stop when run-to-run spread exceeds the effect. Name the measured limiter, rule out
-other explanations with evidence, and keep the run count and spread with the number.
+Stop when run-to-run spread exceeds the effect. Identify the limiter using profiles
+or runtime counters, and rule out other explanations with evidence. Keep the run
+count, spread, and limiter with the number.
 For evals, also check whether all trials did the task, the gap holds across trials
 and models, and the scenario matters. Apply the bundled benchmark-checklist for perf.

@@ -1,6 +1,6 @@
 # Bundled third-party instructions
 
-MayMust 0.12.0 distributes the files below at fixed upstream commits. Installation
+MayMust 0.12.1 distributes the files below at fixed upstream commits. Installation
 does not download upstream `main` or run upstream installers. The complete list of
 copied files and their SHA-256 hashes is in [skills.lock.json](third-party/skills.lock.json).
 Copied instruction/style files are unchanged; MayMust runtime metadata lives beside
@@ -14,7 +14,7 @@ the shipped copy. See [pstack upstream fidelity](#pstack-upstream-fidelity-2026-
 | [obra/superpowers](https://github.com/obra/superpowers/tree/8ca22dba9a94f28898bbce59f2537ff4d87c747d) | `8ca22dba9a94f28898bbce59f2537ff4d87c747d` | Only `verification-before-completion/SKILL.md` | MIT |
 | [alexgreensh/attention-span](https://github.com/alexgreensh/attention-span/tree/39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42) | `39c6b46b24dddecc4cef4e3ab8dc36d3fbffeb42` (0.12) | Attention-kind, Spartan, Rundown, TLDR skills; three native Claude output styles. Since upstream 0.9 they live under `plugins/attention-span/` | AGPL-3.0 |
 | [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/tree/2c606141936f1eeef17fa3043a72095b4765b9c2) | `2c606141936f1eeef17fa3043a72095b4765b9c2` | `karpathy-guidelines/SKILL.md` | MIT (declared upstream) |
-| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7/pstack) | `bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7` | Four standalone skills + LICENSE copied unchanged; three embedded principles adapted | MIT |
+| [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9/pstack) | `7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9` | Four standalone skills + LICENSE copied unchanged; three embedded principles adapted | MIT |
 
 ## License notices
 
@@ -59,6 +59,11 @@ All pstack tracking is consolidated at the commit above, including the former
 `pstack-benchmark` source. No historical compatibility fork remains.
 
 The same MIT license bytes are preserved. Runtime metadata lives in agents/openai.yaml.
+On 2026-11-23, the benchmark skill dropped its reference to the unbundled
+Opening a PR playbook. The adapted measurement and test guidance still covers
+evidence and observable contracts; the local PR evidence rule is unchanged.
+The upstream recommendation for another vendor's model and an audit-transcript
+review is outside the copied fragment and was not adopted.
 `team-defaults` only maps Cursor-only tools and unbundled playbook names to the host:
 Task to an available read-only agent (or sequential fallback), arena to available
 independent perspectives, unslop to clarity editing, Opening a PR to the existing
